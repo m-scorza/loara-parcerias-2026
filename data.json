@@ -1,0 +1,1072 @@
+{
+  "textos": {
+    "meta_versao": "4.0",
+    "meta_data": "2026-01-13",
+    "meta_classificacao": "Estratégico - Confidencial",
+    "meta_titulo": "Cartilha de Planejamento Estratégico - Área de Parcerias LOARA 2026",
+    "meta_subtitulo": "Área de Parcerias - LOARA 2026",
+    "meta_cenario_ativo": "MODERADO",
+    "meta_ano_base": "2025",
+    "meta_ano_planejamento": "2026",
+    "ID": "VALOR",
+    "header_titulo": "Cartilha de Planejamento Estratégico",
+    "header_subtitulo": "Área de Parcerias - LOARA 2026",
+    "header_badge": "Cenário Recomendado: MODERADO",
+    "header_versao_texto": "Versão 4.0 | 13/01/2026",
+    "header_btn_arquivos": "📁 Gestão de Ficheiros",
+    "header_btn_editar": "Editar Valores",
+    "tab_sumario": "Sumário",
+    "tab_cenarios": "Cenários",
+    "tab_acompanhamento": "Acompanhamento",
+    "tab_metas": "Metas",
+    "tab_roadmap": "Roadmap",
+    "tab_compensacao": "Compensação",
+    "tab_processos": "Processos",
+    "tab_riscos": "Riscos",
+    "tab_kpis": "KPIs",
+    "tab_governanca": "Governança",
+    "tab_graficos": "Gráficos",
+    "titulo_objetivo": "Objetivo Estratégico",
+    "titulo_baseline": "Baseline 2025",
+    "titulo_baseline_desc": "Resultados realizados",
+    "titulo_meta": "Meta 2026 (Moderado)",
+    "titulo_meta_desc": "Projeção aprovada",
+    "titulo_crescimento": "Crescimento Projetado",
+    "titulo_crescimento_desc": "Variação 2025 → 2026",
+    "titulo_desafios": "Desafios Identificados em 2025",
+    "titulo_oportunidades": "Oportunidades para 2026",
+    "titulo_cenarios": "Análise de Cenários",
+    "titulo_comparativo": "Comparativo Detalhado dos Cenários",
+    "titulo_acompanhamento": "Acompanhamento Mensal 2026",
+    "titulo_acompanhamento_desc": "Evolução real vs planejado - Cenário Moderado",
+    "titulo_metas_trim": "Metas Trimestrais 2026",
+    "titulo_metas_mensal": "Projeção Mensal - Cenário Moderado",
+    "titulo_roadmap": "Roadmap 2026",
+    "titulo_compensacao": "Modelo de Compensação",
+    "titulo_compensacao_det": "Modelo Híbrido de Compensação - Detalhamento",
+    "titulo_prospeccao": "Processo de Prospecção",
+    "titulo_onboarding": "Processo de Onboarding (30 dias)",
+    "titulo_scoring": "Framework de Qualificação (Scoring)",
+    "titulo_scoring_desc": "Score mínimo para aprovação: 60 pontos",
+    "titulo_riscos": "Matriz de Riscos",
+    "titulo_kpis": "Indicadores de Performance (KPIs)",
+    "titulo_foruns": "Fóruns de Governança",
+    "titulo_calendario": "Calendário Mensal",
+    "titulo_graficos_evolucao": "Evolução da Carteira 2026",
+    "titulo_graficos_evolucao_desc": "Crescimento progressivo mês a mês",
+    "titulo_graficos_cenarios": "Comparativo dos Cenários",
+    "titulo_graficos_cenarios_desc": "Conservador, Moderado e Agressivo",
+    "titulo_graficos_metas": "Metas Mensais 2026",
+    "titulo_graficos_metas_desc": "Indicações, Contratos e Receita",
+    "titulo_graficos_receita": "Distribuição de Receita",
+    "titulo_graficos_receita_desc": "Alocação por gerente",
+    "label_carteira_ativa": "Carteira Ativa",
+    "label_churn_anual": "Churn Anual",
+    "label_indicacoes": "Indicações",
+    "label_negocios": "Negócios Criados",
+    "label_contratos": "Contratos Assinados",
+    "label_operacoes": "Operações de Crédito",
+    "label_captacao": "Captação Total",
+    "label_receita": "Receita Gerada",
+    "label_margem": "Margem Operacional",
+    "label_novos": "Novos Parceiros",
+    "label_investimento": "Investimento",
+    "label_roi": "ROI",
+    "label_risco": "Nível de Risco",
+    "label_prob_sucesso": "Probabilidade de Sucesso",
+    "label_mes": "Mês",
+    "label_trimestre": "Trimestre",
+    "label_periodo": "Período",
+    "label_foco": "Foco",
+    "label_planejado": "Planejado",
+    "label_realizado": "Realizado",
+    "label_variacao": "Variação",
+    "label_status": "Status",
+    "label_acao": "Ação Corretiva",
+    "label_responsavel": "Responsável",
+    "footer_linha1": "Cartilha de Planejamento Estratégico - Área de Parcerias LOARA 2026",
+    "footer_linha2": "Versão 4.0 | Documento Confidencial - Uso Interno"
+  },
+  "valores_base": {
+    "baseline_2025": {
+      "carteira_inicial": 40,
+      "distratos": 11,
+      "churn_percent": 27.5,
+      "indicacoes": 243,
+      "negocios": 200,
+      "contratos": 47,
+      "operacoes": 33,
+      "captacao": 29200000,
+      "receita": 1430000,
+      "margem": 4.89
+    },
+    "premissas_2026": {
+      "churn_meta": 15,
+      "indicacoes_parceiro_mes": 0.72,
+      "taxa_conversao": 19.3,
+      "taxa_credito": 71.4,
+      "ticket_medio": 933333,
+      "margem_meta": 6.0,
+      "investimento": 400000
+    }
+  },
+  "metas_mensais": [
+    {
+      "mes": "Jan",
+      "carteira_inicio": 40,
+      "novos": 2,
+      "churn": 0,
+      "carteira_fim": 42,
+      "indicacoes": 30,
+      "contratos": 6,
+      "operacoes": 4,
+      "captacao": 3733332,
+      "receita": 223999.91999999998
+    },
+    {
+      "mes": "Fev",
+      "carteira_inicio": 42,
+      "novos": 3,
+      "churn": 1,
+      "carteira_fim": 44,
+      "indicacoes": 32,
+      "contratos": 6,
+      "operacoes": 4,
+      "captacao": 3733332,
+      "receita": 223999.91999999998
+    },
+    {
+      "mes": "Mar",
+      "carteira_inicio": 44,
+      "novos": 4,
+      "churn": 0,
+      "carteira_fim": 48,
+      "indicacoes": 35,
+      "contratos": 7,
+      "operacoes": 5,
+      "captacao": 4666665,
+      "receita": 279999.89999999997
+    },
+    {
+      "mes": "Abr",
+      "carteira_inicio": 48,
+      "novos": 5,
+      "churn": 1,
+      "carteira_fim": 52,
+      "indicacoes": 37,
+      "contratos": 7,
+      "operacoes": 5,
+      "captacao": 4666665,
+      "receita": 279999.89999999997
+    },
+    {
+      "mes": "Mai",
+      "carteira_inicio": 52,
+      "novos": 5,
+      "churn": 0,
+      "carteira_fim": 57,
+      "indicacoes": 41,
+      "contratos": 8,
+      "operacoes": 6,
+      "captacao": 5599998,
+      "receita": 335999.88
+    },
+    {
+      "mes": "Jun",
+      "carteira_inicio": 57,
+      "novos": 5,
+      "churn": 1,
+      "carteira_fim": 61,
+      "indicacoes": 44,
+      "contratos": 8,
+      "operacoes": 6,
+      "captacao": 5599998,
+      "receita": 335999.88
+    },
+    {
+      "mes": "Jul",
+      "carteira_inicio": 61,
+      "novos": 6,
+      "churn": 0,
+      "carteira_fim": 67,
+      "indicacoes": 48,
+      "contratos": 9,
+      "operacoes": 6,
+      "captacao": 5599998,
+      "receita": 335999.88
+    },
+    {
+      "mes": "Ago",
+      "carteira_inicio": 67,
+      "novos": 6,
+      "churn": 1,
+      "carteira_fim": 72,
+      "indicacoes": 52,
+      "contratos": 10,
+      "operacoes": 7,
+      "captacao": 6533331,
+      "receita": 391999.86
+    },
+    {
+      "mes": "Set",
+      "carteira_inicio": 72,
+      "novos": 7,
+      "churn": 0,
+      "carteira_fim": 79,
+      "indicacoes": 57,
+      "contratos": 11,
+      "operacoes": 8,
+      "captacao": 7466664,
+      "receita": 447999.83999999997
+    },
+    {
+      "mes": "Out",
+      "carteira_inicio": 79,
+      "novos": 7,
+      "churn": 1,
+      "carteira_fim": 85,
+      "indicacoes": 61,
+      "contratos": 12,
+      "operacoes": 9,
+      "captacao": 8399997,
+      "receita": 503999.82
+    },
+    {
+      "mes": "Nov",
+      "carteira_inicio": 85,
+      "novos": 5,
+      "churn": 1,
+      "carteira_fim": 89,
+      "indicacoes": 64,
+      "contratos": 12,
+      "operacoes": 9,
+      "captacao": 8399997,
+      "receita": 503999.82
+    },
+    {
+      "mes": "Dez",
+      "carteira_inicio": 89,
+      "novos": 5,
+      "churn": 0,
+      "carteira_fim": 94,
+      "indicacoes": 68,
+      "contratos": 13,
+      "operacoes": 9,
+      "captacao": 8399997,
+      "receita": 503999.82
+    }
+  ],
+  "totais_2026": {
+    "carteira_final": 94,
+    "novos": 60,
+    "churn": 6,
+    "indicacoes": 569,
+    "contratos": 109,
+    "operacoes": 78,
+    "captacao": 72799974,
+    "receita": 4367998.4399999995
+  },
+  "metas_trimestrais": [
+    {
+      "trimestre": "Q1",
+      "periodo": "Jan-Mar",
+      "foco": "Estruturação",
+      "novos": 9,
+      "churn": 1,
+      "indicacoes": 97,
+      "contratos": 19,
+      "receita": 727999.74
+    },
+    {
+      "trimestre": "Q2",
+      "periodo": "Abr-Jun",
+      "foco": "Aquisição",
+      "novos": 15,
+      "churn": 2,
+      "indicacoes": 122,
+      "contratos": 23,
+      "receita": 951999.6599999999
+    },
+    {
+      "trimestre": "Q3",
+      "periodo": "Jul-Set",
+      "foco": "Aceleração",
+      "novos": 19,
+      "churn": 1,
+      "indicacoes": 157,
+      "contratos": 30,
+      "receita": 1175999.58
+    },
+    {
+      "trimestre": "Q4",
+      "periodo": "Out-Dez",
+      "foco": "Consolidação",
+      "novos": 17,
+      "churn": 2,
+      "indicacoes": 193,
+      "contratos": 37,
+      "receita": 1511999.46
+    }
+  ],
+  "cenarios": {
+    "conservador": {
+      "nome": "Conservador",
+      "descricao": "Manutenção operacional com melhorias incrementais",
+      "carteira_final": 45,
+      "novos": 25,
+      "churn": 20,
+      "indicacoes": 310,
+      "contratos": 65,
+      "operacoes": 45,
+      "captacao": 40400000,
+      "receita": 1980000,
+      "margem": 4.89,
+      "investimento": 50000,
+      "roi": 1080,
+      "risco": "Baixo",
+      "prob_sucesso": 85
+    },
+    "moderado": {
+      "nome": "Moderado (Recomendado)",
+      "descricao": "Equilíbrio entre volume e qualidade",
+      "carteira_final": 94,
+      "novos": 60,
+      "churn": 15,
+      "indicacoes": 569,
+      "contratos": 109,
+      "operacoes": 78,
+      "captacao": 72799974,
+      "receita": 4367998.4399999995,
+      "margem": 6.0,
+      "investimento": 400000,
+      "roi": 1580,
+      "risco": "Médio",
+      "prob_sucesso": 70
+    },
+    "agressivo": {
+      "nome": "Agressivo",
+      "descricao": "Expansão acelerada com investimento significativo",
+      "carteira_final": 150,
+      "novos": 120,
+      "churn": 20,
+      "indicacoes": 1080,
+      "contratos": 250,
+      "operacoes": 180,
+      "captacao": 150000000,
+      "receita": 7350000,
+      "margem": 5.5,
+      "investimento": 800000,
+      "roi": 741,
+      "risco": "Alto",
+      "prob_sucesso": 45
+    }
+  },
+  "crescimento": {
+    "carteira": 135.0,
+    "indicacoes": 134.2,
+    "contratos": 131.9,
+    "captacao": 149.3,
+    "receita": 205.5
+  },
+  "desafios": [
+    {
+      "id": "D1",
+      "title": "Taxa de Churn Elevada",
+      "description": "21,57% ao ano (11 distratos de 51 parceiros com histórico). Cada parceiro perdido representa em média R$ 35.786 em receita anual não realizada.",
+      "impact": "Alto",
+      "quantified_impact": "R$ 393.646/ano em receita perdida",
+      "solutions": [
+        "Implementar programa de onboarding estruturado de 30 dias",
+        "Criar cadenciamento de comunicação por categoria",
+        "Desenvolver programa de fidelização",
+        "Identificar sinais de alerta precoces"
+      ]
+    },
+    {
+      "id": "D2",
+      "title": "Falta de Qualificação de Leads",
+      "description": "Ausência de critérios formais para qualificar indicações. Resulta em 40% de indicações não qualificadas.",
+      "impact": "Alto",
+      "quantified_impact": "40% de retrabalho operacional",
+      "solutions": [
+        "Desenvolver framework de scoring com 6 critérios",
+        "Estabelecer score mínimo de 60 pontos",
+        "Treinar parceiros sobre perfil ideal",
+        "Automatizar validação inicial"
+      ]
+    },
+    {
+      "id": "D3",
+      "title": "Cadenciamento Inadequado",
+      "description": "Falta de estrutura formal de comunicação. Taxa de no-show de 35% em reuniões agendadas.",
+      "impact": "Alto",
+      "quantified_impact": "35% de oportunidades perdidas",
+      "solutions": [
+        "Definir frequência de contato por categoria",
+        "Implementar lembretes automáticos",
+        "Criar templates padronizados",
+        "Estabelecer SLA de resposta"
+      ]
+    },
+    {
+      "id": "D4",
+      "title": "Carteira Não Segmentada",
+      "description": "Parceiros não ranqueados por potencial. Alocação ineficiente de tempo dos gerentes.",
+      "impact": "Médio",
+      "quantified_impact": "25% de ineficiência operacional",
+      "solutions": [
+        "Classificar em Ouro/Prata/Bronze",
+        "Alocar tempo proporcionalmente",
+        "Criar planos de upgrade",
+        "Revisar classificação trimestralmente"
+      ]
+    },
+    {
+      "id": "D5",
+      "title": "Qualidade de Dados",
+      "description": "Inconsistências no HubSpot comprometem análises. 30% dos registros com dados incompletos.",
+      "impact": "Alto",
+      "quantified_impact": "Decisões baseadas em dados imprecisos",
+      "solutions": [
+        "Realizar auditoria completa em Q1",
+        "Implementar validação obrigatória",
+        "Criar rotina semanal de verificação",
+        "Treinar equipe em boas práticas"
+      ]
+    }
+  ],
+  "oportunidades": [
+    {
+      "id": "O1",
+      "title": "Modelo Operacional Estruturado",
+      "potential_impact": "+30% produtividade",
+      "investment": 50000,
+      "timeline": "Q1"
+    },
+    {
+      "id": "O2",
+      "title": "Dedicação CEO para Parcerias",
+      "potential_impact": "+20% receita top parceiros",
+      "investment": "Tempo executivo",
+      "timeline": "Contínuo"
+    },
+    {
+      "id": "O3",
+      "title": "Automação de Qualificação",
+      "potential_impact": "-40% tempo qualificação",
+      "investment": 30000,
+      "timeline": "Q1-Q2"
+    },
+    {
+      "id": "O4",
+      "title": "Segmentação de Carteira",
+      "potential_impact": "+25% eficiência",
+      "investment": 15000,
+      "timeline": "Q1"
+    },
+    {
+      "id": "O5",
+      "title": "Contratação de Assessores",
+      "potential_impact": "+50% capacidade",
+      "investment": 180000,
+      "timeline": "Q2"
+    },
+    {
+      "id": "O6",
+      "title": "CRM Estruturado",
+      "potential_impact": "+35% visibilidade",
+      "investment": 25000,
+      "timeline": "Q2"
+    }
+  ],
+  "riscos": [
+    {
+      "id": "R1",
+      "title": "Churn Elevado de Novos Parceiros",
+      "probability": 40,
+      "impact": 8,
+      "mitigation": "Onboarding estruturado de 30 dias",
+      "contingency": "Programa de retenção emergencial se churn > 5%/trimestre"
+    },
+    {
+      "id": "R2",
+      "title": "Qualidade de Dados Inadequada",
+      "probability": 60,
+      "impact": 5,
+      "mitigation": "Auditoria completa em Q1",
+      "contingency": "Força-tarefa se > 20% inconsistentes"
+    },
+    {
+      "id": "R3",
+      "title": "Aquisição Abaixo da Meta",
+      "probability": 35,
+      "impact": 6,
+      "mitigation": "Diversificação de canais",
+      "contingency": "Campanha intensiva se < 80% meta"
+    },
+    {
+      "id": "R4",
+      "title": "Capacidade Operacional Insuficiente",
+      "probability": 40,
+      "impact": 8,
+      "mitigation": "Contratação de assessores em Q2",
+      "contingency": "Contratação emergencial se backlog > 50"
+    },
+    {
+      "id": "R5",
+      "title": "Mudanças Regulatórias",
+      "probability": 15,
+      "impact": 9,
+      "mitigation": "Monitoramento contínuo",
+      "contingency": "Análise de impacto em 60 dias"
+    },
+    {
+      "id": "R6",
+      "title": "Concorrência Aumentada",
+      "probability": 45,
+      "impact": 5,
+      "mitigation": "Diferenciação via qualidade",
+      "contingency": "Programa de fidelização se perder 3+ parceiros"
+    },
+    {
+      "id": "R7",
+      "title": "Dependência de Parceiros-Chave",
+      "probability": 50,
+      "impact": 8,
+      "mitigation": "Diversificação de carteira",
+      "contingency": "Reunião executiva se top parceiro anunciar saída"
+    },
+    {
+      "id": "R8",
+      "title": "Rotatividade de Equipe",
+      "probability": 20,
+      "impact": 9,
+      "mitigation": "Programa de retenção e documentação",
+      "contingency": "Plano de transição em 30 dias"
+    }
+  ],
+  "kpis": [
+    {
+      "nome": "Taxa de Churn",
+      "formula": "(Distratos / Carteira Inicial) × 100",
+      "meta": "≤15%/ano",
+      "frequencia": "Mensal"
+    },
+    {
+      "nome": "Taxa de Conversão",
+      "formula": "(Contratos / Indicações) × 100",
+      "meta": "≥25%",
+      "frequencia": "Mensal"
+    },
+    {
+      "nome": "Receita por Parceiro",
+      "formula": "Receita Total / Parceiros Ativos",
+      "meta": "≥R$ 46K/ano",
+      "frequencia": "Mensal"
+    },
+    {
+      "nome": "Captação por Parceiro",
+      "formula": "Captação Total / Parceiros Ativos",
+      "meta": "≥R$ 900K/ano",
+      "frequencia": "Mensal"
+    },
+    {
+      "nome": "Indicações por Parceiro",
+      "formula": "Indicações / Parceiros Ativos",
+      "meta": "≥6,5/ano",
+      "frequencia": "Mensal"
+    },
+    {
+      "nome": "Tempo de Fechamento",
+      "formula": "Média (Data Contrato - Data Indicação)",
+      "meta": "≤45 dias",
+      "frequencia": "Mensal"
+    },
+    {
+      "nome": "NPS de Parceiros",
+      "formula": "Pesquisa NPS",
+      "meta": "≥70",
+      "frequencia": "Trimestral"
+    },
+    {
+      "nome": "Taxa de Ativação",
+      "formula": "(Novos que Indicaram / Novos Total) × 100",
+      "meta": "≥80%",
+      "frequencia": "Mensal"
+    }
+  ],
+  "processos": {
+    "prospeccao": [
+      {
+        "passo": 1,
+        "acao": "Identificar Fontes",
+        "ferramenta": "LinkedIn Sales Navigator",
+        "tempo": "2h/semana"
+      },
+      {
+        "passo": 2,
+        "acao": "Pesquisar Prospect",
+        "ferramenta": "Receita Federal, LinkedIn",
+        "tempo": "30min/prospect"
+      },
+      {
+        "passo": 3,
+        "acao": "Aplicar Scoring",
+        "ferramenta": "Planilha de Scoring",
+        "tempo": "15min/prospect"
+      },
+      {
+        "passo": 4,
+        "acao": "Registrar no CRM",
+        "ferramenta": "HubSpot",
+        "tempo": "10min/prospect"
+      },
+      {
+        "passo": 5,
+        "acao": "Preparar Abordagem",
+        "ferramenta": "Template + personalização",
+        "tempo": "15min/prospect"
+      },
+      {
+        "passo": 6,
+        "acao": "Realizar Contato",
+        "ferramenta": "E-mail/LinkedIn/Telefone",
+        "tempo": "10min/contato"
+      },
+      {
+        "passo": 7,
+        "acao": "Agendar Reunião",
+        "ferramenta": "Calendly",
+        "tempo": "5min"
+      },
+      {
+        "passo": 8,
+        "acao": "Registrar Resultado",
+        "ferramenta": "HubSpot",
+        "tempo": "5min"
+      }
+    ],
+    "onboarding": [
+      {
+        "dia": "D+0",
+        "atividade": "Assinatura do contrato",
+        "responsavel": "Gerente"
+      },
+      {
+        "dia": "D+1",
+        "atividade": "E-mail de boas-vindas",
+        "responsavel": "Gerente"
+      },
+      {
+        "dia": "D+2",
+        "atividade": "Ligação de boas-vindas",
+        "responsavel": "Gerente"
+      },
+      {
+        "dia": "D+3-5",
+        "atividade": "Treinamento inicial",
+        "responsavel": "Gerente"
+      },
+      {
+        "dia": "D+7",
+        "atividade": "Envio de materiais",
+        "responsavel": "Assessor"
+      },
+      {
+        "dia": "D+10",
+        "atividade": "Follow-up de dúvidas",
+        "responsavel": "Gerente"
+      },
+      {
+        "dia": "D+14",
+        "atividade": "Primeira indicação",
+        "responsavel": "Parceiro"
+      },
+      {
+        "dia": "D+21",
+        "atividade": "Revisão de progresso",
+        "responsavel": "Gerente"
+      },
+      {
+        "dia": "D+30",
+        "atividade": "Avaliação de ativação",
+        "responsavel": "Gerente"
+      }
+    ],
+    "scoring": [
+      {
+        "criterio": "Rede de Contatos",
+        "peso": 25,
+        "pontos_0": "< 50 empresas",
+        "pontos_10": "> 200 empresas"
+      },
+      {
+        "criterio": "Experiência no Segmento",
+        "peso": 20,
+        "pontos_0": "< 1 ano",
+        "pontos_10": "> 5 anos"
+      },
+      {
+        "criterio": "Capacidade de Indicação",
+        "peso": 20,
+        "pontos_0": "< 2/mês",
+        "pontos_10": "> 5/mês"
+      },
+      {
+        "criterio": "Alinhamento com Produtos",
+        "peso": 15,
+        "pontos_0": "Baixo",
+        "pontos_10": "Alto"
+      },
+      {
+        "criterio": "Reputação no Mercado",
+        "peso": 10,
+        "pontos_0": "Desconhecida",
+        "pontos_10": "Referência"
+      },
+      {
+        "criterio": "Disponibilidade",
+        "peso": 10,
+        "pontos_0": "Baixa",
+        "pontos_10": "Alta"
+      }
+    ]
+  },
+  "governanca": {
+    "foruns": [
+      {
+        "nome": "Reunião Diária",
+        "participantes": "Gerentes",
+        "frequencia": "Diária",
+        "duracao": "15 min",
+        "objetivo": "Alinhamento operacional"
+      },
+      {
+        "nome": "Reunião Semanal",
+        "participantes": "CEO + Gerentes",
+        "frequencia": "Semanal",
+        "duracao": "1 hora",
+        "objetivo": "Revisão de pipeline"
+      },
+      {
+        "nome": "Reunião Mensal",
+        "participantes": "CEO + Gerentes + Assessores",
+        "frequencia": "Mensal",
+        "duracao": "2 horas",
+        "objetivo": "Análise de KPIs"
+      },
+      {
+        "nome": "Reunião Trimestral",
+        "participantes": "CEO + Gerentes + Board",
+        "frequencia": "Trimestral",
+        "duracao": "3 horas",
+        "objetivo": "Revisão estratégica"
+      }
+    ],
+    "calendario_mensal": [
+      {
+        "dia": "D+1",
+        "atividade": "Fechamento de mês anterior",
+        "responsavel": "Matheus"
+      },
+      {
+        "dia": "D+3",
+        "atividade": "Relatório mensal de KPIs",
+        "responsavel": "Matheus"
+      },
+      {
+        "dia": "D+5",
+        "atividade": "Reunião mensal de resultados",
+        "responsavel": "CEO + Gerentes"
+      },
+      {
+        "dia": "D+7",
+        "atividade": "Envio de relatório para board",
+        "responsavel": "CEO"
+      },
+      {
+        "dia": "D+15",
+        "atividade": "Revisão intermediária",
+        "responsavel": "CEO + Gerentes"
+      },
+      {
+        "dia": "D+20",
+        "atividade": "Projeção de fechamento",
+        "responsavel": "Matheus"
+      },
+      {
+        "dia": "D+25",
+        "atividade": "Ações de fechamento",
+        "responsavel": "Gerentes"
+      }
+    ]
+  },
+  "roadmap": [
+    {
+      "quarter": "Q1",
+      "periodo": "Janeiro - Março",
+      "foco": "Estruturação e Preparação",
+      "meta_novos": 10,
+      "atividades": [
+        {
+          "semana": "S1",
+          "atividade": "Kick-off do Planejamento",
+          "responsavel": "CEO + Gerentes",
+          "entregavel": "Ata de reunião"
+        },
+        {
+          "semana": "S1-S2",
+          "atividade": "Auditoria de Dados HubSpot",
+          "responsavel": "Matheus",
+          "entregavel": "Relatório de auditoria"
+        },
+        {
+          "semana": "S2-S3",
+          "atividade": "Limpeza de Dados",
+          "responsavel": "Matheus + Viviane",
+          "entregavel": "Base limpa"
+        },
+        {
+          "semana": "S3-S4",
+          "atividade": "Framework de Scoring",
+          "responsavel": "Matheus",
+          "entregavel": "Documento de scoring"
+        },
+        {
+          "semana": "S4-S5",
+          "atividade": "Segmentação de Carteira",
+          "responsavel": "Gerentes",
+          "entregavel": "Carteira segmentada"
+        },
+        {
+          "semana": "S5-S6",
+          "atividade": "Cadenciamento de Comunicação",
+          "responsavel": "Gerentes",
+          "entregavel": "Calendário de contatos"
+        },
+        {
+          "semana": "S6-S7",
+          "atividade": "Processo de Onboarding",
+          "responsavel": "Matheus",
+          "entregavel": "Manual de onboarding"
+        },
+        {
+          "semana": "S7-S8",
+          "atividade": "Treinamento Interno",
+          "responsavel": "CEO",
+          "entregavel": "Equipe treinada"
+        },
+        {
+          "semana": "S8-S10",
+          "atividade": "Início de Prospecção",
+          "responsavel": "Gerentes",
+          "entregavel": "Pipeline de prospects"
+        },
+        {
+          "semana": "S11-S12",
+          "atividade": "Fechamento Q1",
+          "responsavel": "CEO + Gerentes",
+          "entregavel": "Relatório Q1"
+        }
+      ]
+    },
+    {
+      "quarter": "Q2",
+      "periodo": "Abril - Junho",
+      "foco": "Aquisição e Consolidação",
+      "meta_novos": 15,
+      "atividades": [
+        {
+          "semana": "S13",
+          "atividade": "Revisão de Q1",
+          "responsavel": "CEO + Gerentes",
+          "entregavel": "Plano de ação Q2"
+        },
+        {
+          "semana": "S13-S14",
+          "atividade": "Implementação CRM",
+          "responsavel": "Matheus",
+          "entregavel": "CRM configurado"
+        },
+        {
+          "semana": "S14-S16",
+          "atividade": "Automação de Processos",
+          "responsavel": "Matheus",
+          "entregavel": "Workflows ativos"
+        },
+        {
+          "semana": "S15-S18",
+          "atividade": "Aquisição Intensiva",
+          "responsavel": "Gerentes",
+          "entregavel": "15 novos parceiros"
+        },
+        {
+          "semana": "S18-S20",
+          "atividade": "Programa de Retenção",
+          "responsavel": "Gerentes",
+          "entregavel": "Programa ativo"
+        },
+        {
+          "semana": "S22-S24",
+          "atividade": "Contratação Assessores",
+          "responsavel": "CEO",
+          "entregavel": "Assessores contratados"
+        }
+      ]
+    },
+    {
+      "quarter": "Q3",
+      "periodo": "Julho - Setembro",
+      "foco": "Aceleração",
+      "meta_novos": 15,
+      "atividades": [
+        {
+          "semana": "S25",
+          "atividade": "Revisão de Q2",
+          "responsavel": "CEO + Gerentes",
+          "entregavel": "Plano de ação Q3"
+        },
+        {
+          "semana": "S25-S26",
+          "atividade": "Integração Assessores",
+          "responsavel": "Gerentes",
+          "entregavel": "Assessores produtivos"
+        },
+        {
+          "semana": "S26-S30",
+          "atividade": "Aquisição Acelerada",
+          "responsavel": "Gerentes",
+          "entregavel": "15 novos parceiros"
+        },
+        {
+          "semana": "S28-S32",
+          "atividade": "Otimização de Processos",
+          "responsavel": "Matheus",
+          "entregavel": "Processos otimizados"
+        },
+        {
+          "semana": "S32-S36",
+          "atividade": "Revisão Intermediária",
+          "responsavel": "CEO + Gerentes",
+          "entregavel": "Relatório intermediário"
+        }
+      ]
+    },
+    {
+      "quarter": "Q4",
+      "periodo": "Outubro - Dezembro",
+      "foco": "Consolidação e Planejamento 2027",
+      "meta_novos": 10,
+      "atividades": [
+        {
+          "semana": "S37",
+          "atividade": "Revisão de Q3",
+          "responsavel": "CEO + Gerentes",
+          "entregavel": "Plano de ação Q4"
+        },
+        {
+          "semana": "S37-S42",
+          "atividade": "Aquisição Final",
+          "responsavel": "Gerentes",
+          "entregavel": "10 novos parceiros"
+        },
+        {
+          "semana": "S40-S44",
+          "atividade": "Análise de Resultados",
+          "responsavel": "Matheus",
+          "entregavel": "Relatório anual"
+        },
+        {
+          "semana": "S44-S48",
+          "atividade": "Planejamento 2027",
+          "responsavel": "CEO + Gerentes",
+          "entregavel": "Draft planejamento"
+        },
+        {
+          "semana": "S50-S52",
+          "atividade": "Fechamento Anual",
+          "responsavel": "CEO + Gerentes",
+          "entregavel": "Relatório final 2026"
+        }
+      ]
+    }
+  ],
+  "gerentes": {
+    "matheus_scorza": {
+      "nome": "Matheus Scorza",
+      "cargo": "Gerente Sênior",
+      "carteira_2025": 35,
+      "carteira_2026_meta": 89,
+      "proporcao_carteira": 89,
+      "metas_2026": {
+        "novos_parceiros": 53,
+        "indicacoes": 774,
+        "contratos": 150,
+        "operacoes": 107,
+        "captacao": 99680000,
+        "receita_corporativa": 5980800
+      },
+      "compensacao": {
+        "salario_base_mensal": 8000,
+        "salario_base_anual": 96000,
+        "comissao_aquisicao_anual": 106000,
+        "comissao_recorrente_anual": 85000,
+        "bonus_anual": 16000,
+        "renda_total_anual": 303000
+      }
+    },
+    "viviane_andrade": {
+      "nome": "Viviane Andrade",
+      "cargo": "Gerente",
+      "carteira_2025": 5,
+      "carteira_2026_meta": 11,
+      "proporcao_carteira": 11,
+      "metas_2026": {
+        "novos_parceiros": 7,
+        "indicacoes": 96,
+        "contratos": 18,
+        "operacoes": 13,
+        "captacao": 12320000,
+        "receita_corporativa": 739200
+      },
+      "compensacao": {
+        "salario_base_mensal": 6500,
+        "salario_base_anual": 78000,
+        "comissao_aquisicao_anual": 14000,
+        "comissao_recorrente_anual": 11000,
+        "bonus_anual": 12000,
+        "renda_total_anual": 115000
+      }
+    }
+  },
+  "diagnostico": {
+    "periodo": {
+      "inicio": "2025-01-01",
+      "fim": "2025-12-11"
+    },
+    "resumo": {
+      "total_parceiros": 116,
+      "parceiros_ativos": 72,
+      "parceiros_inativos": 44,
+      "parceiros_ouro": 4,
+      "parceiros_prata": 78,
+      "parceiros_bronze": 34,
+      "empresas_originadas": 243,
+      "empresas_com_negocio": 130,
+      "negocios_pipeline": 135,
+      "captacao": 29243714.85,
+      "faturamento": 1431438.794
+    },
+    "por_status": {
+      "Ativado": 72,
+      "Descadastramento": 31,
+      "Desativado": 8,
+      "Exclusão": 2
+    },
+    "por_tipo": {
+      "Prata": 78,
+      "Bronze": 34,
+      "Ouro": 4
+    }
+  }
+}

@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  .gradient-header {
+    @apply bg-gradient-to-r from-loara-600 to-loara-500;
+  }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-md;
+  }
+
+  .stat-card {
+    @apply card p-6 card-hover;
+  }
+
+  .tab-button {
+    @apply px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200;
+  }
+
+  .tab-button-active {
+    @apply bg-loara-600 text-white shadow-lg shadow-loara-500/25;
+  }
+
+  .tab-button-inactive {
+    @apply text-slate-600 hover:text-loara-600 hover:bg-loara-50;
+  }
+
+  .editable-field {
+    @apply cursor-pointer hover:bg-loara-50 rounded px-1 -mx-1 transition-colors;
+  }
+
+  .editable-field:focus {
+    @apply outline-none ring-2 ring-loara-500 bg-white;
+  }
+
+  .edit-input {
+    @apply border border-loara-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-loara-500;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-loara-600 to-loara-400;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full hover:bg-slate-400;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.4s ease-out forwards;
+}
+
+/* Number formatting */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
