@@ -4,6 +4,7 @@ import Header from './components/Header'
 import Navigation from './components/Navigation'
 import Loading from './components/Loading'
 import TabSumario from './components/tabs/TabSumario'
+import TabGraficos from './components/tabs/TabGraficos'
 import TabCenarios from './components/tabs/TabCenarios'
 import TabMetas from './components/tabs/TabMetas'
 import TabDiagnostico from './components/tabs/TabDiagnostico'
@@ -26,6 +27,8 @@ function Dashboard() {
     switch (activeTab) {
       case 'sumario':
         return <TabSumario />
+      case 'graficos':
+        return <TabGraficos />
       case 'cenarios':
         return <TabCenarios />
       case 'metas':

@@ -8,11 +8,13 @@ import {
   AlertTriangle,
   BarChart3,
   Map,
-  Building2
+  Building2,
+  PieChart
 } from 'lucide-react'
 
 const tabs = [
   { id: 'sumario', label: 'Sumário', icon: LayoutDashboard },
+  { id: 'graficos', label: 'Gráficos', icon: PieChart },
   { id: 'cenarios', label: 'Cenários', icon: Target },
   { id: 'metas', label: 'Metas', icon: TrendingUp },
   { id: 'diagnostico', label: 'Diagnóstico', icon: Search },
