@@ -34,9 +34,11 @@ export default function TabDiagnostico() {
       email: p.email || '',
       tipoParceria: p.tipo_parceria || p.tipoParceria || 'Bronze',
       status: p.status || 'Ativado',
-      indicacoes: p.indicacoes_reais?.total ?? p.indicacoes ?? 0,
-      resultado: p.resultado_financeiro_real?.credito_tomado_total ?? p.resultado ?? 0,
-      faturamentoLoara: p.resultado_financeiro_real?.faturamento_bruto_loara ?? 0,
+      // Novos campos corretos do Excel
+      empresasIndicadas: p.empresasIndicadas ?? p.indicacoes ?? 0,
+      empresasCIC: p.empresasCIC ?? 0,
+      creditoTomado: p.creditoTomado ?? p.resultado ?? 0,
+      receitaLoara: p.receitaLoara ?? p.faturamentoLoara ?? 0,
       diasSemIndicar: p.dias_sem_indicar ?? p.diasSemIndicar ?? null,
       ultimaIndicacao: p.ultima_indicacao || null,
       highPerformer: p.highPerformer || false
@@ -67,11 +69,13 @@ export default function TabDiagnostico() {
     } else if (filterStatus === 'inativos') {
       result = result.filter(p => p.status !== 'Ativado')
     } else if (filterStatus === 'com_indicacoes') {
-      result = result.filter(p => p.indicacoes > 0)
+      result = result.filter(p => p.empresasIndicadas > 0)
     } else if (filterStatus === 'sem_indicacoes') {
-      result = result.filter(p => p.indicacoes === 0)
+      result = result.filter(p => p.empresasIndicadas === 0)
     } else if (filterStatus === 'com_resultado') {
-      result = result.filter(p => p.resultado > 0)
+      result = result.filter(p => p.creditoTomado > 0)
+    } else if (filterStatus === 'cic') {
+      result = result.filter(p => p.empresasCIC > 0)
     } else if (filterStatus === 'alerta_45dias') {
       result = result.filter(p => p.diasSemIndicar !== null && p.diasSemIndicar > 45)
     }
@@ -85,9 +89,11 @@ export default function TabDiagnostico() {
         const order = { 'Ouro': 0, 'Prata': 1, 'Bronze': 2 }
         comparison = order[a.tipoParceria] - order[b.tipoParceria]
       } else if (sortBy === 'indicacoes') {
-        comparison = (b.indicacoes || 0) - (a.indicacoes || 0)
+        comparison = (b.empresasIndicadas || 0) - (a.empresasIndicadas || 0)
+      } else if (sortBy === 'cic') {
+        comparison = (b.empresasCIC || 0) - (a.empresasCIC || 0)
       } else if (sortBy === 'resultado') {
-        comparison = (b.resultado || 0) - (a.resultado || 0)
+        comparison = (b.creditoTomado || 0) - (a.creditoTomado || 0)
       } else if (sortBy === 'diasSemIndicar') {
         const aDias = a.diasSemIndicar ?? 9999
         const bDias = b.diasSemIndicar ?? 9999
@@ -102,13 +108,16 @@ export default function TabDiagnostico() {
   // Estatísticas calculadas
   const stats = useMemo(() => {
     const ativos = parceiros.filter(p => p.status === 'Ativado')
-    const comIndicacoes = ativos.filter(p => p.indicacoes > 0)
-    const comResultado = ativos.filter(p => p.resultado > 0)
+    const comIndicacoes = ativos.filter(p => p.empresasIndicadas > 0)
+    const comCIC = ativos.filter(p => p.empresasCIC > 0)
+    const comResultado = ativos.filter(p => p.creditoTomado > 0)
     const semIndicar45dias = ativos.filter(p => p.diasSemIndicar !== null && p.diasSemIndicar > 45)
     const highPerformers = parceiros.filter(p => p.highPerformer)
 
-    const totalCredito = ativos.reduce((sum, p) => sum + (p.resultado || 0), 0)
-    const totalFaturamento = ativos.reduce((sum, p) => sum + (p.faturamentoLoara || 0), 0)
+    const totalIndicacoes = ativos.reduce((sum, p) => sum + (p.empresasIndicadas || 0), 0)
+    const totalCIC = ativos.reduce((sum, p) => sum + (p.empresasCIC || 0), 0)
+    const totalCredito = ativos.reduce((sum, p) => sum + (p.creditoTomado || 0), 0)
+    const totalReceitaLoara = ativos.reduce((sum, p) => sum + (p.receitaLoara || 0), 0)
 
     return {
       totalParceiros: parceiros.length,
@@ -118,14 +127,17 @@ export default function TabDiagnostico() {
       bronze: ativos.filter(p => p.tipoParceria === 'Bronze').length,
       comIndicacoes: comIndicacoes.length,
       semIndicacoes: ativos.length - comIndicacoes.length,
+      comCIC: comCIC.length,
       comResultado: comResultado.length,
       semResultado: ativos.length - comResultado.length,
       semIndicar45dias: semIndicar45dias.length,
       highPerformers: highPerformers.length,
       taxaAtivacao: ativos.length > 0 ? Math.round((comIndicacoes.length / ativos.length) * 100) : 0,
-      taxaConversao: comIndicacoes.length > 0 ? Math.round((comResultado.length / comIndicacoes.length) * 100) : 0,
+      taxaConversao: comIndicacoes.length > 0 ? Math.round((comCIC.length / comIndicacoes.length) * 100) : 0,
+      totalIndicacoes,
+      totalCIC,
       totalCredito,
-      totalFaturamento
+      totalReceitaLoara
     }
   }, [parceiros])
 
@@ -159,8 +171,8 @@ export default function TabDiagnostico() {
   const barDataPerformance = [
     { name: 'Com Indicações', value: stats.comIndicacoes, fill: '#10B981' },
     { name: 'Sem Indicações', value: stats.semIndicacoes, fill: '#F59E0B' },
-    { name: 'Com Resultado', value: stats.comResultado, fill: '#6370f1' },
-    { name: 'Sem Resultado', value: stats.semResultado, fill: '#94a3b8' },
+    { name: 'Empresas CIC', value: stats.comCIC, fill: '#6370f1' },
+    { name: 'Com Crédito Tomado', value: stats.comResultado, fill: '#0ea5e9' },
   ]
 
   return (
@@ -212,7 +224,29 @@ export default function TabDiagnostico() {
       </div>
 
       {/* Cards de Resultados */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid md:grid-cols-5 gap-4">
+        <div className="card p-5 border-l-4 border-l-sky-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm text-slate-500">Total Empresas Indicadas</div>
+              <div className="text-2xl font-bold text-sky-600">{stats.totalIndicacoes}</div>
+            </div>
+            <UserCheck className="w-10 h-10 text-sky-500" />
+          </div>
+          <p className="text-xs text-slate-400 mt-2">Empresas originadas pelos parceiros</p>
+        </div>
+
+        <div className="card p-5 border-l-4 border-l-loara-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm text-slate-500">Empresas CIC</div>
+              <div className="text-2xl font-bold text-loara-600">{stats.totalCIC}</div>
+            </div>
+            <Briefcase className="w-10 h-10 text-loara-500" />
+          </div>
+          <p className="text-xs text-slate-400 mt-2">Empresas que assinaram contrato</p>
+        </div>
+
         <div className="card p-5 border-l-4 border-l-emerald-500">
           <div className="flex items-center justify-between">
             <div>
@@ -221,29 +255,18 @@ export default function TabDiagnostico() {
             </div>
             <DollarSign className="w-10 h-10 text-emerald-500" />
           </div>
-          <p className="text-xs text-slate-400 mt-2">Soma do crédito gerado pelos parceiros</p>
-        </div>
-
-        <div className="card p-5 border-l-4 border-l-loara-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-slate-500">Faturamento Loara</div>
-              <div className="text-2xl font-bold text-loara-600">{formatCurrency(stats.totalFaturamento)}</div>
-            </div>
-            <Briefcase className="w-10 h-10 text-loara-500" />
-          </div>
-          <p className="text-xs text-slate-400 mt-2">Receita bruta gerada para a Loara</p>
+          <p className="text-xs text-slate-400 mt-2">Operações em fase "Crédito Tomado"</p>
         </div>
 
         <div className="card p-5 border-l-4 border-l-amber-500">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-slate-500">High Performers</div>
-              <div className="text-2xl font-bold text-amber-600">{stats.highPerformers}</div>
+              <div className="text-sm text-slate-500">Receita Loara</div>
+              <div className="text-2xl font-bold text-amber-600">{formatCurrency(stats.totalReceitaLoara)}</div>
             </div>
-            <Star className="w-10 h-10 text-amber-500 fill-amber-500" />
+            <Star className="w-10 h-10 text-amber-500" />
           </div>
-          <p className="text-xs text-slate-400 mt-2">Parceiros marcados como destaque</p>
+          <p className="text-xs text-slate-400 mt-2">Faturamento bruto gerado</p>
         </div>
 
         <div className="card p-5 border-l-4 border-l-rose-500">
@@ -394,7 +417,8 @@ export default function TabDiagnostico() {
                   <option value="ativos">✅ Apenas Ativos</option>
                   <option value="com_indicacoes">📤 Com Indicações ({stats.comIndicacoes})</option>
                   <option value="sem_indicacoes">📭 Sem Indicações ({stats.semIndicacoes})</option>
-                  <option value="com_resultado">💰 Com Resultado ({stats.comResultado})</option>
+                  <option value="cic">📝 Com Empresas CIC ({stats.comCIC})</option>
+                  <option value="com_resultado">💰 Com Crédito Tomado ({stats.comResultado})</option>
                   <option value="alerta_45dias">⚠️ Alerta +45 dias ({stats.semIndicar45dias})</option>
                 </select>
               </div>
@@ -407,8 +431,9 @@ export default function TabDiagnostico() {
                 >
                   <option value="nome">Nome (A-Z)</option>
                   <option value="categoria">Categoria</option>
-                  <option value="indicacoes">Indicações</option>
-                  <option value="resultado">Resultado</option>
+                  <option value="indicacoes">Empresas Indicadas</option>
+                  <option value="cic">Empresas CIC</option>
+                  <option value="resultado">Crédito Tomado</option>
                   <option value="diasSemIndicar">Dias sem indicar</option>
                 </select>
               </div>
@@ -442,6 +467,9 @@ export default function TabDiagnostico() {
                 <th className="p-4 text-center font-semibold text-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => handleSort('indicacoes')}>
                   Indicações {sortBy === 'indicacoes' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
+                <th className="p-4 text-center font-semibold text-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => handleSort('cic')}>
+                  CIC {sortBy === 'cic' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
                 <th className="p-4 text-center font-semibold text-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => handleSort('resultado')}>
                   Crédito Tomado {sortBy === 'resultado' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
@@ -453,7 +481,7 @@ export default function TabDiagnostico() {
             <tbody>
               {filteredParceiros.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-slate-500">
+                  <td colSpan={7} className="p-8 text-center text-slate-500">
                     Nenhum parceiro encontrado com os filtros selecionados.
                   </td>
                 </tr>
@@ -499,13 +527,18 @@ export default function TabDiagnostico() {
                       </span>
                     </td>
                     <td className="p-4 text-center">
-                      <span className={`font-bold text-lg ${p.indicacoes > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        {p.indicacoes}
+                      <span className={`font-bold text-lg ${p.empresasIndicadas > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        {p.empresasIndicadas}
                       </span>
                     </td>
                     <td className="p-4 text-center">
-                      {p.resultado > 0 ? (
-                        <span className="font-bold text-loara-600">{formatCurrency(p.resultado)}</span>
+                      <span className={`font-bold ${p.empresasCIC > 0 ? 'text-loara-600' : 'text-slate-400'}`}>
+                        {p.empresasCIC > 0 ? p.empresasCIC : '-'}
+                      </span>
+                    </td>
+                    <td className="p-4 text-center">
+                      {p.creditoTomado > 0 ? (
+                        <span className="font-bold text-emerald-600">{formatCurrency(p.creditoTomado)}</span>
                       ) : (
                         <span className="text-slate-400">-</span>
                       )}
