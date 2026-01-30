@@ -17,9 +17,13 @@ export function DataProvider({ children }) {
       // Try to load from localStorage first
       const savedData = localStorage.getItem('loara-planejamento-2026')
       if (savedData) {
-        setData(JSON.parse(savedData))
-        setLoading(false)
-        return
+        const parsedData = JSON.parse(savedData)
+        // Check if data has parceiros_lista, if not, reload from data.json
+        if (parsedData.parceiros_lista && parsedData.parceiros_lista.length > 0) {
+          setData(parsedData)
+          setLoading(false)
+          return
+        }
       }
 
       // Otherwise load from data.json

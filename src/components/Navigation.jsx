@@ -14,7 +14,6 @@ import {
 
 const tabs = [
   { id: 'sumario', label: 'Sumário', icon: LayoutDashboard },
-  { id: 'graficos', label: 'Gráficos', icon: PieChart },
   { id: 'cenarios', label: 'Cenários', icon: Target },
   { id: 'metas', label: 'Metas', icon: TrendingUp },
   { id: 'diagnostico', label: 'Diagnóstico', icon: Search },
@@ -24,6 +23,7 @@ const tabs = [
   { id: 'kpis', label: 'KPIs', icon: BarChart3 },
   { id: 'roadmap', label: 'Roadmap', icon: Map },
   { id: 'governanca', label: 'Governança', icon: Building2 },
+  { id: 'graficos', label: 'Gráficos', icon: PieChart },
 ]
 
 export default function Navigation({ activeTab, setActiveTab }) {
