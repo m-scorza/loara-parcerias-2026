@@ -2,11 +2,12 @@ import { useState, useMemo } from 'react'
 import { useData } from '../../context/DataContext'
 import { formatCurrency } from '../../utils/format'
 import StatCard from '../StatCard'
+import EditableField from '../EditableField'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import {
   Users, UserCheck, DollarSign, Briefcase, Star, Search,
   Filter, AlertTriangle, CheckCircle2, Clock, TrendingUp,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, XCircle
 } from 'lucide-react'
 
 const CATEGORY_COLORS = {
@@ -15,24 +16,31 @@ const CATEGORY_COLORS = {
   'Bronze': '#CD7F32'
 }
 
-const STATUS_COLORS = {
-  'Ativado': '#10B981',
-  'Descadastramento': '#F59E0B',
-  'Desativado': '#64748b',
-  'Exclusão': '#F43F5E'
-}
-
 export default function TabDiagnostico() {
-  const { data, updateData } = useData()
+  const { data, updateData, editMode } = useData()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterCategory, setFilterCategory] = useState('todos')
-  const [filterStatus, setFilterStatus] = useState('ativos')
-  const [sortBy, setSortBy] = useState('nome')
-  const [showFilters, setShowFilters] = useState(false)
+  const [filterStatus, setFilterStatus] = useState('todos')
+  const [sortBy, setSortBy] = useState('indicacoes')
+  const [sortOrder, setSortOrder] = useState('desc')
+  const [showFilters, setShowFilters] = useState(true)
 
-  // Dados dos parceiros
+  // Dados dos parceiros - adapta para ambas estruturas de dados
   const parceiros = useMemo(() => {
-    return data.parceiros_lista || []
+    const lista = data.parceiros_lista || []
+    return lista.map(p => ({
+      id: p.id,
+      nome: p.nome_completo || p.nome || '',
+      email: p.email || '',
+      tipoParceria: p.tipo_parceria || p.tipoParceria || 'Bronze',
+      status: p.status || 'Ativado',
+      indicacoes: p.indicacoes_reais?.total ?? p.indicacoes ?? 0,
+      resultado: p.resultado_financeiro_real?.credito_tomado_total ?? p.resultado ?? 0,
+      faturamentoLoara: p.resultado_financeiro_real?.faturamento_bruto_loara ?? 0,
+      diasSemIndicar: p.dias_sem_indicar ?? p.diasSemIndicar ?? null,
+      ultimaIndicacao: p.ultima_indicacao || null,
+      highPerformer: p.highPerformer || false
+    }))
   }, [data.parceiros_lista])
 
   // Filtros e ordenação
@@ -41,9 +49,10 @@ export default function TabDiagnostico() {
 
     // Filtro por busca
     if (searchTerm) {
+      const term = searchTerm.toLowerCase()
       result = result.filter(p =>
-        p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.email && p.email.toLowerCase().includes(searchTerm.toLowerCase()))
+        p.nome.toLowerCase().includes(term) ||
+        (p.email && p.email.toLowerCase().includes(term))
       )
     }
 
@@ -57,39 +66,56 @@ export default function TabDiagnostico() {
       result = result.filter(p => p.status === 'Ativado')
     } else if (filterStatus === 'inativos') {
       result = result.filter(p => p.status !== 'Ativado')
+    } else if (filterStatus === 'com_indicacoes') {
+      result = result.filter(p => p.indicacoes > 0)
+    } else if (filterStatus === 'sem_indicacoes') {
+      result = result.filter(p => p.indicacoes === 0)
+    } else if (filterStatus === 'com_resultado') {
+      result = result.filter(p => p.resultado > 0)
+    } else if (filterStatus === 'alerta_45dias') {
+      result = result.filter(p => p.diasSemIndicar !== null && p.diasSemIndicar > 45)
     }
 
     // Ordenação
     result.sort((a, b) => {
-      if (sortBy === 'nome') return a.nome.localeCompare(b.nome)
-      if (sortBy === 'categoria') {
+      let comparison = 0
+      if (sortBy === 'nome') {
+        comparison = a.nome.localeCompare(b.nome)
+      } else if (sortBy === 'categoria') {
         const order = { 'Ouro': 0, 'Prata': 1, 'Bronze': 2 }
-        return order[a.tipoParceria] - order[b.tipoParceria]
+        comparison = order[a.tipoParceria] - order[b.tipoParceria]
+      } else if (sortBy === 'indicacoes') {
+        comparison = (b.indicacoes || 0) - (a.indicacoes || 0)
+      } else if (sortBy === 'resultado') {
+        comparison = (b.resultado || 0) - (a.resultado || 0)
+      } else if (sortBy === 'diasSemIndicar') {
+        const aDias = a.diasSemIndicar ?? 9999
+        const bDias = b.diasSemIndicar ?? 9999
+        comparison = bDias - aDias
       }
-      if (sortBy === 'indicacoes') return (b.indicacoes || 0) - (a.indicacoes || 0)
-      if (sortBy === 'resultado') return (b.resultado || 0) - (a.resultado || 0)
-      return 0
+      return sortOrder === 'asc' ? -comparison : comparison
     })
 
     return result
-  }, [parceiros, searchTerm, filterCategory, filterStatus, sortBy])
+  }, [parceiros, searchTerm, filterCategory, filterStatus, sortBy, sortOrder])
 
   // Estatísticas calculadas
   const stats = useMemo(() => {
     const ativos = parceiros.filter(p => p.status === 'Ativado')
-    const ativosOuroPrata = ativos.filter(p => p.tipoParceria === 'Ouro' || p.tipoParceria === 'Prata')
-    const comIndicacoes = ativos.filter(p => (p.indicacoes || 0) > 0)
-    const comResultado = ativos.filter(p => (p.resultado || 0) > 0)
-    const semIndicar45dias = ativos.filter(p => p.diasSemIndicar > 45)
+    const comIndicacoes = ativos.filter(p => p.indicacoes > 0)
+    const comResultado = ativos.filter(p => p.resultado > 0)
+    const semIndicar45dias = ativos.filter(p => p.diasSemIndicar !== null && p.diasSemIndicar > 45)
     const highPerformers = parceiros.filter(p => p.highPerformer)
+
+    const totalCredito = ativos.reduce((sum, p) => sum + (p.resultado || 0), 0)
+    const totalFaturamento = ativos.reduce((sum, p) => sum + (p.faturamentoLoara || 0), 0)
 
     return {
       totalParceiros: parceiros.length,
       ativos: ativos.length,
-      ativosOuroPrata: ativosOuroPrata.length,
-      ouro: parceiros.filter(p => p.tipoParceria === 'Ouro' && p.status === 'Ativado').length,
-      prata: parceiros.filter(p => p.tipoParceria === 'Prata' && p.status === 'Ativado').length,
-      bronze: parceiros.filter(p => p.tipoParceria === 'Bronze' && p.status === 'Ativado').length,
+      ouro: ativos.filter(p => p.tipoParceria === 'Ouro').length,
+      prata: ativos.filter(p => p.tipoParceria === 'Prata').length,
+      bronze: ativos.filter(p => p.tipoParceria === 'Bronze').length,
       comIndicacoes: comIndicacoes.length,
       semIndicacoes: ativos.length - comIndicacoes.length,
       comResultado: comResultado.length,
@@ -97,7 +123,9 @@ export default function TabDiagnostico() {
       semIndicar45dias: semIndicar45dias.length,
       highPerformers: highPerformers.length,
       taxaAtivacao: ativos.length > 0 ? Math.round((comIndicacoes.length / ativos.length) * 100) : 0,
-      taxaConversao: comIndicacoes.length > 0 ? Math.round((comResultado.length / comIndicacoes.length) * 100) : 0
+      taxaConversao: comIndicacoes.length > 0 ? Math.round((comResultado.length / comIndicacoes.length) * 100) : 0,
+      totalCredito,
+      totalFaturamento
     }
   }, [parceiros])
 
@@ -105,8 +133,19 @@ export default function TabDiagnostico() {
   const toggleHighPerformer = (parceiroId) => {
     const index = parceiros.findIndex(p => p.id === parceiroId)
     if (index !== -1) {
-      const newValue = !parceiros[index].highPerformer
+      const lista = data.parceiros_lista || []
+      const newValue = !lista[index].highPerformer
       updateData(`parceiros_lista[${index}].highPerformer`, newValue)
+    }
+  }
+
+  // Toggle sort order
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortOrder('desc')
     }
   }
 
@@ -129,10 +168,14 @@ export default function TabDiagnostico() {
       <div>
         <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
           <span className="text-2xl">🔍</span>
-          Diagnóstico da Carteira
+          {editMode ? (
+            <EditableField path="textos.titulo_diagnostico" defaultValue="Diagnóstico da Carteira" />
+          ) : (
+            'Diagnóstico da Carteira'
+          )}
         </h2>
         <p className="text-slate-500 mt-2">
-          Análise detalhada dos parceiros Ouro e Prata ativos
+          Análise detalhada dos parceiros ativos - Dados reais extraídos em 30/01/2026
         </p>
       </div>
 
@@ -141,7 +184,7 @@ export default function TabDiagnostico() {
         <StatCard
           title="Parceiros Ativos"
           value={stats.ativos}
-          subtitle={`${stats.ativosOuroPrata} Ouro/Prata`}
+          subtitle={`${stats.ouro} Ouro | ${stats.prata} Prata | ${stats.bronze} Bronze`}
           color="loara"
           icon={Users}
         />
@@ -160,51 +203,58 @@ export default function TabDiagnostico() {
           icon={CheckCircle2}
         />
         <StatCard
-          title="Sem Indicar +45 dias"
+          title="Alerta +45 dias"
           value={stats.semIndicar45dias}
-          subtitle="Precisam de atenção"
+          subtitle="Sem indicar"
           color="amber"
           icon={AlertTriangle}
         />
       </div>
 
-      {/* Cards de Alertas */}
-      <div className="grid md:grid-cols-3 gap-4">
+      {/* Cards de Resultados */}
+      <div className="grid md:grid-cols-4 gap-4">
         <div className="card p-5 border-l-4 border-l-emerald-500">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-slate-500">High Performers</div>
-              <div className="text-3xl font-bold text-emerald-600">{stats.highPerformers}</div>
+              <div className="text-sm text-slate-500">Crédito Tomado Total</div>
+              <div className="text-2xl font-bold text-emerald-600">{formatCurrency(stats.totalCredito)}</div>
             </div>
-            <Star className="w-10 h-10 text-emerald-500 fill-emerald-500" />
+            <DollarSign className="w-10 h-10 text-emerald-500" />
           </div>
-          <p className="text-xs text-slate-400 mt-2">Parceiros marcados como alta performance</p>
+          <p className="text-xs text-slate-400 mt-2">Soma do crédito gerado pelos parceiros</p>
+        </div>
+
+        <div className="card p-5 border-l-4 border-l-loara-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm text-slate-500">Faturamento Loara</div>
+              <div className="text-2xl font-bold text-loara-600">{formatCurrency(stats.totalFaturamento)}</div>
+            </div>
+            <Briefcase className="w-10 h-10 text-loara-500" />
+          </div>
+          <p className="text-xs text-slate-400 mt-2">Receita bruta gerada para a Loara</p>
         </div>
 
         <div className="card p-5 border-l-4 border-l-amber-500">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-slate-500">Parceiros Ouro Ativos</div>
-              <div className="text-3xl font-bold text-amber-600">{stats.ouro}</div>
+              <div className="text-sm text-slate-500">High Performers</div>
+              <div className="text-2xl font-bold text-amber-600">{stats.highPerformers}</div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-              <span className="text-lg">🥇</span>
-            </div>
+            <Star className="w-10 h-10 text-amber-500 fill-amber-500" />
           </div>
-          <p className="text-xs text-slate-400 mt-2">Top performers da carteira</p>
+          <p className="text-xs text-slate-400 mt-2">Parceiros marcados como destaque</p>
         </div>
 
-        <div className="card p-5 border-l-4 border-l-slate-500">
+        <div className="card p-5 border-l-4 border-l-rose-500">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-slate-500">Parceiros Prata Ativos</div>
-              <div className="text-3xl font-bold text-slate-600">{stats.prata}</div>
+              <div className="text-sm text-slate-500">Inadimplentes</div>
+              <div className="text-2xl font-bold text-rose-600">{data.diagnostico?.pagamentos?.inadimplentes || 8}</div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-              <span className="text-lg">🥈</span>
-            </div>
+            <XCircle className="w-10 h-10 text-rose-500" />
           </div>
-          <p className="text-xs text-slate-400 mt-2">Parceiros em desenvolvimento</p>
+          <p className="text-xs text-slate-400 mt-2">{formatCurrency(data.diagnostico?.pagamentos?.valor_total_a_receber || 96127)} a receber</p>
         </div>
       </div>
 
@@ -280,7 +330,7 @@ export default function TabDiagnostico() {
               <Users className="w-5 h-5 text-loara-500" />
               Listagem de Parceiros
               <span className="ml-2 px-2 py-0.5 bg-loara-100 text-loara-700 rounded-full text-sm">
-                {filteredParceiros.length}
+                {filteredParceiros.length} de {stats.ativos}
               </span>
             </h3>
 
@@ -290,11 +340,19 @@ export default function TabDiagnostico() {
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Buscar parceiro..."
+                  placeholder="Buscar por nome ou email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-loara-500 w-64"
                 />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <XCircle className="w-4 h-4" />
+                  </button>
+                )}
               </div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
@@ -319,35 +377,50 @@ export default function TabDiagnostico() {
                   onChange={(e) => setFilterCategory(e.target.value)}
                   className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-loara-500"
                 >
-                  <option value="todos">Todas</option>
-                  <option value="Ouro">Ouro</option>
-                  <option value="Prata">Prata</option>
-                  <option value="Bronze">Bronze</option>
+                  <option value="todos">Todas as categorias</option>
+                  <option value="Ouro">🥇 Ouro ({stats.ouro})</option>
+                  <option value="Prata">🥈 Prata ({stats.prata})</option>
+                  <option value="Bronze">🥉 Bronze ({stats.bronze})</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-slate-500 mb-1">Status</label>
+                <label className="block text-xs text-slate-500 mb-1">Filtrar por</label>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
                   className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-loara-500"
                 >
-                  <option value="ativos">Apenas Ativos</option>
-                  <option value="inativos">Apenas Inativos</option>
-                  <option value="todos">Todos</option>
+                  <option value="todos">Todos os parceiros</option>
+                  <option value="ativos">✅ Apenas Ativos</option>
+                  <option value="com_indicacoes">📤 Com Indicações ({stats.comIndicacoes})</option>
+                  <option value="sem_indicacoes">📭 Sem Indicações ({stats.semIndicacoes})</option>
+                  <option value="com_resultado">💰 Com Resultado ({stats.comResultado})</option>
+                  <option value="alerta_45dias">⚠️ Alerta +45 dias ({stats.semIndicar45dias})</option>
                 </select>
               </div>
               <div>
                 <label className="block text-xs text-slate-500 mb-1">Ordenar por</label>
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
+                  onChange={(e) => handleSort(e.target.value)}
                   className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-loara-500"
                 >
-                  <option value="nome">Nome</option>
+                  <option value="nome">Nome (A-Z)</option>
                   <option value="categoria">Categoria</option>
                   <option value="indicacoes">Indicações</option>
                   <option value="resultado">Resultado</option>
+                  <option value="diasSemIndicar">Dias sem indicar</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">Ordem</label>
+                <select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-loara-500"
+                >
+                  <option value="desc">Decrescente ↓</option>
+                  <option value="asc">Crescente ↑</option>
                 </select>
               </div>
             </div>
@@ -360,24 +433,33 @@ export default function TabDiagnostico() {
             <thead>
               <tr className="bg-slate-50">
                 <th className="p-4 text-left font-semibold text-slate-600 w-12">⭐</th>
-                <th className="p-4 text-left font-semibold text-slate-600">Parceiro</th>
-                <th className="p-4 text-center font-semibold text-slate-600">Categoria</th>
-                <th className="p-4 text-center font-semibold text-slate-600">Status</th>
-                <th className="p-4 text-center font-semibold text-slate-600">Indicações</th>
-                <th className="p-4 text-center font-semibold text-slate-600">Resultado</th>
-                <th className="p-4 text-center font-semibold text-slate-600">Última Indicação</th>
+                <th className="p-4 text-left font-semibold text-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => handleSort('nome')}>
+                  Parceiro {sortBy === 'nome' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="p-4 text-center font-semibold text-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => handleSort('categoria')}>
+                  Categoria {sortBy === 'categoria' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="p-4 text-center font-semibold text-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => handleSort('indicacoes')}>
+                  Indicações {sortBy === 'indicacoes' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="p-4 text-center font-semibold text-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => handleSort('resultado')}>
+                  Crédito Tomado {sortBy === 'resultado' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="p-4 text-center font-semibold text-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => handleSort('diasSemIndicar')}>
+                  Última Indicação {sortBy === 'diasSemIndicar' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
               </tr>
             </thead>
             <tbody>
               {filteredParceiros.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-slate-500">
+                  <td colSpan={6} className="p-8 text-center text-slate-500">
                     Nenhum parceiro encontrado com os filtros selecionados.
                   </td>
                 </tr>
               ) : (
-                filteredParceiros.map((p, i) => (
-                  <tr key={p.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
+                filteredParceiros.map((p) => (
+                  <tr key={p.id} className={`border-b last:border-0 hover:bg-slate-50 transition-colors ${p.diasSemIndicar !== null && p.diasSemIndicar > 45 ? 'bg-rose-50/50' : ''}`}>
                     <td className="p-4">
                       <button
                         onClick={() => toggleHighPerformer(p.id)}
@@ -410,35 +492,27 @@ export default function TabDiagnostico() {
                           color: CATEGORY_COLORS[p.tipoParceria]
                         }}
                       >
+                        {p.tipoParceria === 'Ouro' && '🥇'}
+                        {p.tipoParceria === 'Prata' && '🥈'}
+                        {p.tipoParceria === 'Bronze' && '🥉'}
                         {p.tipoParceria}
                       </span>
                     </td>
                     <td className="p-4 text-center">
-                      <span
-                        className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                          p.status === 'Ativado'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
-                        {p.status || 'N/A'}
+                      <span className={`font-bold text-lg ${p.indicacoes > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        {p.indicacoes}
                       </span>
                     </td>
                     <td className="p-4 text-center">
-                      <span className={`font-bold ${(p.indicacoes || 0) > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        {p.indicacoes || 0}
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      {(p.resultado || 0) > 0 ? (
+                      {p.resultado > 0 ? (
                         <span className="font-bold text-loara-600">{formatCurrency(p.resultado)}</span>
                       ) : (
                         <span className="text-slate-400">-</span>
                       )}
                     </td>
                     <td className="p-4 text-center">
-                      {p.diasSemIndicar !== undefined ? (
-                        <span className={`text-sm ${p.diasSemIndicar > 45 ? 'text-rose-600 font-medium' : 'text-slate-600'}`}>
+                      {p.diasSemIndicar !== null ? (
+                        <span className={`text-sm ${p.diasSemIndicar > 45 ? 'text-rose-600 font-medium' : p.diasSemIndicar > 30 ? 'text-amber-600' : 'text-slate-600'}`}>
                           {p.diasSemIndicar > 45 ? (
                             <span className="flex items-center justify-center gap-1">
                               <AlertTriangle className="w-4 h-4" />
@@ -449,7 +523,7 @@ export default function TabDiagnostico() {
                           )}
                         </span>
                       ) : (
-                        <span className="text-slate-400">-</span>
+                        <span className="text-rose-400 text-sm">Nunca indicou</span>
                       )}
                     </td>
                   </tr>
@@ -476,14 +550,14 @@ export default function TabDiagnostico() {
               <AlertTriangle className="w-4 h-4 text-rose-500" />
               Atenção
             </h4>
-            <p className="text-slate-600">Parceiros marcados em vermelho na última indicação estão há mais de 45 dias sem indicar e precisam de um contato.</p>
+            <p className="text-slate-600">Linhas em vermelho indicam parceiros há mais de 45 dias sem indicar. "Nunca indicou" significa que o parceiro nunca fez uma indicação.</p>
           </div>
           <div className="p-4 bg-slate-50 rounded-xl">
             <h4 className="font-semibold text-slate-700 mb-2 flex items-center gap-2">
               <Filter className="w-4 h-4 text-loara-500" />
               Filtros
             </h4>
-            <p className="text-slate-600">Use os filtros para encontrar parceiros específicos por categoria, status ou ordenar por performance.</p>
+            <p className="text-slate-600">Use os filtros para encontrar parceiros por categoria, status de indicações ou ordenar por performance. Clique nos cabeçalhos para ordenar.</p>
           </div>
         </div>
       </div>
