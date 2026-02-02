@@ -1,13 +1,12 @@
 import { useState, useMemo } from 'react'
 import { useData } from '../../context/DataContext'
 import { formatCurrency } from '../../utils/format'
-import StatCard from '../StatCard'
 import EditableField from '../EditableField'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import {
   Users, UserCheck, DollarSign, Briefcase, Star, Search,
-  Filter, AlertTriangle, CheckCircle2, Clock, TrendingUp,
-  ChevronDown, ChevronUp, XCircle
+  Filter, AlertTriangle, CheckCircle2, TrendingUp,
+  ChevronDown, ChevronUp, XCircle, X, Eye
 } from 'lucide-react'
 
 const CATEGORY_COLORS = {
@@ -16,17 +15,260 @@ const CATEGORY_COLORS = {
   'Bronze': '#CD7F32'
 }
 
+// Componente de Modal para mostrar lista de parceiros
+function ParceiroListModal({ isOpen, onClose, title, parceiros, subtitle }) {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div
+        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden animate-fadeIn"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+            {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+        <div className="overflow-y-auto max-h-[60vh]">
+          {parceiros.length === 0 ? (
+            <div className="p-8 text-center text-slate-500">
+              Nenhum parceiro encontrado
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {parceiros.map((p, i) => (
+                <div key={p.id || i} className="p-4 hover:bg-slate-50 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium text-white"
+                      style={{ backgroundColor: CATEGORY_COLORS[p.tipoParceria] || '#64748b' }}
+                    >
+                      {p.nome?.split(' ').slice(0, 2).map(n => n[0]).join('') || '??'}
+                    </div>
+                    <div>
+                      <div className="font-medium text-slate-900">{p.nome}</div>
+                      <div className="text-xs text-slate-500 flex items-center gap-2">
+                        <span className="px-1.5 py-0.5 rounded text-xs" style={{
+                          backgroundColor: `${CATEGORY_COLORS[p.tipoParceria]}20`,
+                          color: CATEGORY_COLORS[p.tipoParceria]
+                        }}>
+                          {p.tipoParceria}
+                        </span>
+                        {p.email && <span>{p.email}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right text-sm">
+                    {p.empresasIndicadas !== undefined && (
+                      <div className="text-slate-600">{p.empresasIndicadas} indicações</div>
+                    )}
+                    {p.empresasCIC !== undefined && p.empresasCIC > 0 && (
+                      <div className="text-loara-600 font-medium">{p.empresasCIC} CIC</div>
+                    )}
+                    {p.creditoTomado !== undefined && p.creditoTomado > 0 && (
+                      <div className="text-emerald-600 font-medium">{formatCurrency(p.creditoTomado)}</div>
+                    )}
+                    {p.diasSemIndicar !== undefined && p.diasSemIndicar !== null && (
+                      <div className={p.diasSemIndicar > 45 ? 'text-rose-600' : 'text-slate-500'}>
+                        {p.diasSemIndicar} dias sem indicar
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="p-4 border-t border-slate-100 bg-slate-50">
+          <div className="text-sm text-slate-600 text-center">
+            Total: <span className="font-bold">{parceiros.length}</span> parceiros
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Card clicável com hover interativo
+function InteractiveStatCard({ title, value, subtitle, color, icon: Icon, onClick, parceiros }) {
+  const [showTooltip, setShowTooltip] = useState(false)
+
+  const colorClasses = {
+    loara: 'bg-loara-50 border-loara-200 text-loara-700',
+    emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+    sky: 'bg-sky-50 border-sky-200 text-sky-700',
+    amber: 'bg-amber-50 border-amber-200 text-amber-700',
+    rose: 'bg-rose-50 border-rose-200 text-rose-700',
+  }
+
+  const iconBgClasses = {
+    loara: 'bg-loara-100 text-loara-600',
+    emerald: 'bg-emerald-100 text-emerald-600',
+    sky: 'bg-sky-100 text-sky-600',
+    amber: 'bg-amber-100 text-amber-600',
+    rose: 'bg-rose-100 text-rose-600',
+  }
+
+  // Mostra até 5 parceiros no tooltip
+  const previewParceiros = parceiros?.slice(0, 5) || []
+  const hasMore = parceiros?.length > 5
+
+  return (
+    <div
+      className={`card p-5 border-2 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] relative ${colorClasses[color] || colorClasses.loara}`}
+      onClick={onClick}
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium opacity-80">{title}</p>
+          <p className="text-3xl font-bold mt-1">{value}</p>
+          {subtitle && <p className="text-xs mt-2 opacity-70">{subtitle}</p>}
+        </div>
+        {Icon && (
+          <div className={`p-3 rounded-xl ${iconBgClasses[color] || iconBgClasses.loara}`}>
+            <Icon className="w-6 h-6" />
+          </div>
+        )}
+      </div>
+      <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs opacity-60">
+        <Eye className="w-3 h-3" />
+        <span>Clique para ver</span>
+      </div>
+
+      {/* Tooltip com preview */}
+      {showTooltip && parceiros && parceiros.length > 0 && (
+        <div className="absolute left-0 right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-xl border border-slate-200 p-3 animate-fadeIn">
+          <div className="text-xs font-semibold text-slate-500 mb-2">Preview:</div>
+          <div className="space-y-1">
+            {previewParceiros.map((p, i) => (
+              <div key={i} className="text-sm text-slate-700 truncate">
+                • {p.nome}
+              </div>
+            ))}
+            {hasMore && (
+              <div className="text-xs text-slate-400 mt-1">
+                +{parceiros.length - 5} mais...
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Card de resultado clicável
+function InteractiveResultCard({ title, value, subtitle, icon: Icon, borderColor, textColor, onClick, parceiros }) {
+  const [showTooltip, setShowTooltip] = useState(false)
+  const previewParceiros = parceiros?.slice(0, 5) || []
+  const hasMore = parceiros?.length > 5
+
+  return (
+    <div
+      className={`card p-5 border-l-4 ${borderColor} cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] relative`}
+      onClick={onClick}
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-sm text-slate-500">{title}</div>
+          <div className={`text-2xl font-bold ${textColor}`}>{value}</div>
+        </div>
+        <Icon className={`w-10 h-10 ${textColor.replace('text-', 'text-').replace('-600', '-500')}`} />
+      </div>
+      {subtitle && <p className="text-xs text-slate-400 mt-2">{subtitle}</p>}
+      <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs text-slate-400">
+        <Eye className="w-3 h-3" />
+      </div>
+
+      {/* Tooltip com preview */}
+      {showTooltip && parceiros && parceiros.length > 0 && (
+        <div className="absolute left-0 right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-xl border border-slate-200 p-3 animate-fadeIn">
+          <div className="text-xs font-semibold text-slate-500 mb-2">Preview:</div>
+          <div className="space-y-1">
+            {previewParceiros.map((p, i) => (
+              <div key={i} className="text-sm text-slate-700 truncate">
+                • {p.nome}
+              </div>
+            ))}
+            {hasMore && (
+              <div className="text-xs text-slate-400 mt-1">
+                +{parceiros.length - 5} mais...
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function TabDiagnostico() {
   const { data, updateData, editMode } = useData()
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterCategory, setFilterCategory] = useState('todos')
   const [filterStatus, setFilterStatus] = useState('todos')
   const [sortBy, setSortBy] = useState('indicacoes')
   const [sortOrder, setSortOrder] = useState('desc')
   const [showFilters, setShowFilters] = useState(true)
 
+  // Filtros globais por tipo de parceria (checkboxes)
+  const [selectedCategories, setSelectedCategories] = useState({
+    Ouro: true,
+    Prata: true,
+    Bronze: true
+  })
+
+  // Modal state
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: '',
+    subtitle: '',
+    parceiros: []
+  })
+
+  const openModal = (title, parceiros, subtitle = '') => {
+    setModalConfig({
+      isOpen: true,
+      title,
+      subtitle,
+      parceiros
+    })
+  }
+
+  const closeModal = () => {
+    setModalConfig(prev => ({ ...prev, isOpen: false }))
+  }
+
+  // Toggle categoria
+  const toggleCategory = (category) => {
+    setSelectedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }))
+  }
+
+  // Selecionar/deselecionar todas
+  const selectAllCategories = () => {
+    setSelectedCategories({ Ouro: true, Prata: true, Bronze: true })
+  }
+
+  const deselectAllCategories = () => {
+    setSelectedCategories({ Ouro: false, Prata: false, Bronze: false })
+  }
+
   // Dados dos parceiros - adapta para ambas estruturas de dados
-  const parceiros = useMemo(() => {
+  const allParceiros = useMemo(() => {
     const lista = data.parceiros_lista || []
     return lista.map(p => ({
       id: p.id,
@@ -34,7 +276,6 @@ export default function TabDiagnostico() {
       email: p.email || '',
       tipoParceria: p.tipo_parceria || p.tipoParceria || 'Bronze',
       status: p.status || 'Ativado',
-      // Novos campos corretos do Excel
       empresasIndicadas: p.empresasIndicadas ?? p.indicacoes ?? 0,
       empresasCIC: p.empresasCIC ?? 0,
       creditoTomado: p.creditoTomado ?? p.resultado ?? 0,
@@ -45,7 +286,12 @@ export default function TabDiagnostico() {
     }))
   }, [data.parceiros_lista])
 
-  // Filtros e ordenação
+  // Parceiros filtrados pelo filtro global de categoria
+  const parceiros = useMemo(() => {
+    return allParceiros.filter(p => selectedCategories[p.tipoParceria])
+  }, [allParceiros, selectedCategories])
+
+  // Filtros e ordenação para a tabela
   const filteredParceiros = useMemo(() => {
     let result = [...parceiros]
 
@@ -56,11 +302,6 @@ export default function TabDiagnostico() {
         p.nome.toLowerCase().includes(term) ||
         (p.email && p.email.toLowerCase().includes(term))
       )
-    }
-
-    // Filtro por categoria
-    if (filterCategory !== 'todos') {
-      result = result.filter(p => p.tipoParceria === filterCategory)
     }
 
     // Filtro por status
@@ -103,9 +344,9 @@ export default function TabDiagnostico() {
     })
 
     return result
-  }, [parceiros, searchTerm, filterCategory, filterStatus, sortBy, sortOrder])
+  }, [parceiros, searchTerm, filterStatus, sortBy, sortOrder])
 
-  // Estatísticas calculadas
+  // Estatísticas calculadas - agora usando os parceiros filtrados por categoria
   const stats = useMemo(() => {
     const ativos = parceiros.filter(p => p.status === 'Ativado')
     const comIndicacoes = ativos.filter(p => p.empresasIndicadas > 0)
@@ -122,16 +363,26 @@ export default function TabDiagnostico() {
     return {
       totalParceiros: parceiros.length,
       ativos: ativos.length,
+      ativosList: ativos,
       ouro: ativos.filter(p => p.tipoParceria === 'Ouro').length,
+      ouroList: ativos.filter(p => p.tipoParceria === 'Ouro'),
       prata: ativos.filter(p => p.tipoParceria === 'Prata').length,
+      prataList: ativos.filter(p => p.tipoParceria === 'Prata'),
       bronze: ativos.filter(p => p.tipoParceria === 'Bronze').length,
+      bronzeList: ativos.filter(p => p.tipoParceria === 'Bronze'),
       comIndicacoes: comIndicacoes.length,
+      comIndicacoesList: comIndicacoes,
       semIndicacoes: ativos.length - comIndicacoes.length,
+      semIndicacoesList: ativos.filter(p => p.empresasIndicadas === 0),
       comCIC: comCIC.length,
+      comCICList: comCIC,
       comResultado: comResultado.length,
+      comResultadoList: comResultado,
       semResultado: ativos.length - comResultado.length,
       semIndicar45dias: semIndicar45dias.length,
+      semIndicar45diasList: semIndicar45dias,
       highPerformers: highPerformers.length,
+      highPerformersList: highPerformers,
       taxaAtivacao: ativos.length > 0 ? Math.round((comIndicacoes.length / ativos.length) * 100) : 0,
       taxaConversao: comIndicacoes.length > 0 ? Math.round((comCIC.length / comIndicacoes.length) * 100) : 0,
       totalIndicacoes,
@@ -143,7 +394,7 @@ export default function TabDiagnostico() {
 
   // Toggle High Performer
   const toggleHighPerformer = (parceiroId) => {
-    const index = parceiros.findIndex(p => p.id === parceiroId)
+    const index = allParceiros.findIndex(p => p.id === parceiroId)
     if (index !== -1) {
       const lista = data.parceiros_lista || []
       const newValue = !lista[index].highPerformer
@@ -161,12 +412,12 @@ export default function TabDiagnostico() {
     }
   }
 
-  // Dados para gráficos
+  // Dados para gráficos - usando stats filtrados
   const pieDataCategoria = [
     { name: 'Ouro', value: stats.ouro, fill: CATEGORY_COLORS['Ouro'] },
     { name: 'Prata', value: stats.prata, fill: CATEGORY_COLORS['Prata'] },
     { name: 'Bronze', value: stats.bronze, fill: CATEGORY_COLORS['Bronze'] },
-  ]
+  ].filter(d => d.value > 0)
 
   const barDataPerformance = [
     { name: 'Com Indicações', value: stats.comIndicacoes, fill: '#10B981' },
@@ -175,8 +426,20 @@ export default function TabDiagnostico() {
     { name: 'Com Crédito Tomado', value: stats.comResultado, fill: '#0ea5e9' },
   ]
 
+  // Contagem de categorias ativas para label do filtro
+  const activeCategoriesCount = Object.values(selectedCategories).filter(Boolean).length
+
   return (
     <div className="space-y-8 animate-fadeIn">
+      {/* Modal */}
+      <ParceiroListModal
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        title={modalConfig.title}
+        subtitle={modalConfig.subtitle}
+        parceiros={modalConfig.parceiros}
+      />
+
       <div>
         <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
           <span className="text-2xl">🔍</span>
@@ -191,101 +454,261 @@ export default function TabDiagnostico() {
         </p>
       </div>
 
-      {/* KPIs Principais */}
+      {/* Filtro Global por Categoria */}
+      <div className="card p-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Filter className="w-5 h-5 text-loara-500" />
+            <span className="font-semibold text-slate-700">Filtrar por Tipo:</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Checkbox Ouro */}
+            <label className={`flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer transition-all border-2 ${
+              selectedCategories.Ouro
+                ? 'bg-amber-50 border-amber-300 text-amber-700'
+                : 'bg-slate-50 border-slate-200 text-slate-400'
+            }`}>
+              <input
+                type="checkbox"
+                checked={selectedCategories.Ouro}
+                onChange={() => toggleCategory('Ouro')}
+                className="sr-only"
+              />
+              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                selectedCategories.Ouro ? 'bg-amber-500 border-amber-500' : 'border-slate-300'
+              }`}>
+                {selectedCategories.Ouro && <span className="text-white text-xs">✓</span>}
+              </div>
+              <span className="font-medium">🥇 Ouro</span>
+              <span className={`text-xs px-1.5 py-0.5 rounded ${
+                selectedCategories.Ouro ? 'bg-amber-200' : 'bg-slate-200'
+              }`}>
+                {allParceiros.filter(p => p.tipoParceria === 'Ouro' && p.status === 'Ativado').length}
+              </span>
+            </label>
+
+            {/* Checkbox Prata */}
+            <label className={`flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer transition-all border-2 ${
+              selectedCategories.Prata
+                ? 'bg-slate-100 border-slate-400 text-slate-700'
+                : 'bg-slate-50 border-slate-200 text-slate-400'
+            }`}>
+              <input
+                type="checkbox"
+                checked={selectedCategories.Prata}
+                onChange={() => toggleCategory('Prata')}
+                className="sr-only"
+              />
+              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                selectedCategories.Prata ? 'bg-slate-500 border-slate-500' : 'border-slate-300'
+              }`}>
+                {selectedCategories.Prata && <span className="text-white text-xs">✓</span>}
+              </div>
+              <span className="font-medium">🥈 Prata</span>
+              <span className={`text-xs px-1.5 py-0.5 rounded ${
+                selectedCategories.Prata ? 'bg-slate-300' : 'bg-slate-200'
+              }`}>
+                {allParceiros.filter(p => p.tipoParceria === 'Prata' && p.status === 'Ativado').length}
+              </span>
+            </label>
+
+            {/* Checkbox Bronze */}
+            <label className={`flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer transition-all border-2 ${
+              selectedCategories.Bronze
+                ? 'bg-orange-50 border-orange-300 text-orange-700'
+                : 'bg-slate-50 border-slate-200 text-slate-400'
+            }`}>
+              <input
+                type="checkbox"
+                checked={selectedCategories.Bronze}
+                onChange={() => toggleCategory('Bronze')}
+                className="sr-only"
+              />
+              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                selectedCategories.Bronze ? 'bg-orange-500 border-orange-500' : 'border-slate-300'
+              }`}>
+                {selectedCategories.Bronze && <span className="text-white text-xs">✓</span>}
+              </div>
+              <span className="font-medium">🥉 Bronze</span>
+              <span className={`text-xs px-1.5 py-0.5 rounded ${
+                selectedCategories.Bronze ? 'bg-orange-200' : 'bg-slate-200'
+              }`}>
+                {allParceiros.filter(p => p.tipoParceria === 'Bronze' && p.status === 'Ativado').length}
+              </span>
+            </label>
+          </div>
+
+          <div className="flex items-center gap-2 ml-auto">
+            <button
+              onClick={selectAllCategories}
+              className="text-xs text-loara-600 hover:text-loara-800 font-medium"
+            >
+              Selecionar todos
+            </button>
+            <span className="text-slate-300">|</span>
+            <button
+              onClick={deselectAllCategories}
+              className="text-xs text-slate-500 hover:text-slate-700 font-medium"
+            >
+              Limpar
+            </button>
+          </div>
+        </div>
+
+        {activeCategoriesCount < 3 && (
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <p className="text-sm text-loara-600">
+              <strong>Filtro ativo:</strong> Mostrando apenas parceiros {
+                Object.entries(selectedCategories)
+                  .filter(([_, v]) => v)
+                  .map(([k]) => k)
+                  .join(' e ')
+              }
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* KPIs Principais - Agora Interativos */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
+        <InteractiveStatCard
           title="Parceiros Ativos"
           value={stats.ativos}
           subtitle={`${stats.ouro} Ouro | ${stats.prata} Prata | ${stats.bronze} Bronze`}
           color="loara"
           icon={Users}
+          parceiros={stats.ativosList}
+          onClick={() => openModal(
+            'Parceiros Ativos',
+            stats.ativosList,
+            `${stats.ouro} Ouro, ${stats.prata} Prata, ${stats.bronze} Bronze`
+          )}
         />
-        <StatCard
+        <InteractiveStatCard
           title="Com Indicações"
           value={stats.comIndicacoes}
           subtitle={`${stats.taxaAtivacao}% de ativação`}
           color="emerald"
           icon={TrendingUp}
+          parceiros={stats.comIndicacoesList}
+          onClick={() => openModal(
+            'Parceiros com Indicações',
+            stats.comIndicacoesList,
+            `Taxa de ativação: ${stats.taxaAtivacao}%`
+          )}
         />
-        <StatCard
+        <InteractiveStatCard
           title="Geraram Resultado"
           value={stats.comResultado}
           subtitle={`${stats.taxaConversao}% de conversão`}
           color="sky"
           icon={CheckCircle2}
+          parceiros={stats.comResultadoList}
+          onClick={() => openModal(
+            'Parceiros que Geraram Crédito',
+            stats.comResultadoList,
+            `Total de crédito: ${formatCurrency(stats.totalCredito)}`
+          )}
         />
-        <StatCard
+        <InteractiveStatCard
           title="Alerta +45 dias"
           value={stats.semIndicar45dias}
           subtitle="Sem indicar"
           color="amber"
           icon={AlertTriangle}
+          parceiros={stats.semIndicar45diasList}
+          onClick={() => openModal(
+            'Parceiros em Alerta (+45 dias)',
+            stats.semIndicar45diasList,
+            'Parceiros há mais de 45 dias sem fazer indicações'
+          )}
         />
       </div>
 
-      {/* Cards de Resultados */}
+      {/* Cards de Resultados - Agora Interativos */}
       <div className="grid md:grid-cols-5 gap-4">
-        <div className="card p-5 border-l-4 border-l-sky-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-slate-500">Total Empresas Indicadas</div>
-              <div className="text-2xl font-bold text-sky-600">{stats.totalIndicacoes}</div>
-            </div>
-            <UserCheck className="w-10 h-10 text-sky-500" />
-          </div>
-          <p className="text-xs text-slate-400 mt-2">Empresas originadas pelos parceiros</p>
-        </div>
+        <InteractiveResultCard
+          title="Total Empresas Indicadas"
+          value={stats.totalIndicacoes}
+          subtitle="Empresas originadas pelos parceiros"
+          icon={UserCheck}
+          borderColor="border-l-sky-500"
+          textColor="text-sky-600"
+          parceiros={stats.comIndicacoesList}
+          onClick={() => openModal(
+            'Parceiros com Indicações',
+            stats.comIndicacoesList.sort((a, b) => b.empresasIndicadas - a.empresasIndicadas),
+            `Total de ${stats.totalIndicacoes} empresas indicadas`
+          )}
+        />
 
-        <div className="card p-5 border-l-4 border-l-loara-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-slate-500">Empresas CIC</div>
-              <div className="text-2xl font-bold text-loara-600">{stats.totalCIC}</div>
-            </div>
-            <Briefcase className="w-10 h-10 text-loara-500" />
-          </div>
-          <p className="text-xs text-slate-400 mt-2">Empresas que assinaram contrato</p>
-        </div>
+        <InteractiveResultCard
+          title="Empresas CIC"
+          value={stats.totalCIC}
+          subtitle="Empresas que assinaram contrato"
+          icon={Briefcase}
+          borderColor="border-l-loara-500"
+          textColor="text-loara-600"
+          parceiros={stats.comCICList}
+          onClick={() => openModal(
+            'Parceiros com Empresas CIC',
+            stats.comCICList.sort((a, b) => b.empresasCIC - a.empresasCIC),
+            `Total de ${stats.totalCIC} empresas CIC`
+          )}
+        />
 
-        <div className="card p-5 border-l-4 border-l-emerald-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-slate-500">Crédito Tomado Total</div>
-              <div className="text-2xl font-bold text-emerald-600">{formatCurrency(stats.totalCredito)}</div>
-            </div>
-            <DollarSign className="w-10 h-10 text-emerald-500" />
-          </div>
-          <p className="text-xs text-slate-400 mt-2">Operações em fase "Crédito Tomado"</p>
-        </div>
+        <InteractiveResultCard
+          title="Crédito Tomado Total"
+          value={formatCurrency(stats.totalCredito)}
+          subtitle='Operações em fase "Crédito Tomado"'
+          icon={DollarSign}
+          borderColor="border-l-emerald-500"
+          textColor="text-emerald-600"
+          parceiros={stats.comResultadoList}
+          onClick={() => openModal(
+            'Parceiros com Crédito Tomado',
+            stats.comResultadoList.sort((a, b) => b.creditoTomado - a.creditoTomado),
+            `Total: ${formatCurrency(stats.totalCredito)}`
+          )}
+        />
 
-        <div className="card p-5 border-l-4 border-l-amber-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-slate-500">Receita Loara</div>
-              <div className="text-2xl font-bold text-amber-600">{formatCurrency(stats.totalReceitaLoara)}</div>
-            </div>
-            <Star className="w-10 h-10 text-amber-500" />
-          </div>
-          <p className="text-xs text-slate-400 mt-2">Faturamento bruto gerado</p>
-        </div>
+        <InteractiveResultCard
+          title="Receita Loara"
+          value={formatCurrency(stats.totalReceitaLoara)}
+          subtitle="Faturamento bruto gerado"
+          icon={Star}
+          borderColor="border-l-amber-500"
+          textColor="text-amber-600"
+          parceiros={stats.comResultadoList.filter(p => p.receitaLoara > 0)}
+          onClick={() => openModal(
+            'Parceiros que Geraram Receita',
+            stats.comResultadoList.filter(p => p.receitaLoara > 0).sort((a, b) => b.receitaLoara - a.receitaLoara),
+            `Total: ${formatCurrency(stats.totalReceitaLoara)}`
+          )}
+        />
 
-        <div className="card p-5 border-l-4 border-l-rose-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm text-slate-500">Inadimplentes</div>
-              <div className="text-2xl font-bold text-rose-600">{data.diagnostico?.pagamentos?.inadimplentes || 8}</div>
-            </div>
-            <XCircle className="w-10 h-10 text-rose-500" />
-          </div>
-          <p className="text-xs text-slate-400 mt-2">{formatCurrency(data.diagnostico?.pagamentos?.valor_total_a_receber || 96127)} a receber</p>
-        </div>
+        <InteractiveResultCard
+          title="Sem Indicações"
+          value={stats.semIndicacoes}
+          subtitle="Parceiros que nunca indicaram"
+          icon={XCircle}
+          borderColor="border-l-rose-500"
+          textColor="text-rose-600"
+          parceiros={stats.semIndicacoesList}
+          onClick={() => openModal(
+            'Parceiros sem Indicações',
+            stats.semIndicacoesList,
+            'Parceiros ativos que ainda não fizeram nenhuma indicação'
+          )}
+        />
       </div>
 
       {/* Gráficos */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Distribuição por Categoria */}
         <div className="card p-6">
-          <h3 className="font-bold text-slate-900 mb-6">Distribuição por Categoria (Ativos)</h3>
+          <h3 className="font-bold text-slate-900 mb-6">Distribuição por Categoria (Filtrado)</h3>
           <div className="flex items-center gap-8">
             <div className="w-48 h-48">
               <ResponsiveContainer width="100%" height="100%">
@@ -309,7 +732,15 @@ export default function TabDiagnostico() {
             </div>
             <div className="flex-1 space-y-4">
               {pieDataCategoria.map((item, i) => (
-                <div key={i} className="flex items-center justify-between">
+                <div
+                  key={i}
+                  className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors"
+                  onClick={() => {
+                    const list = item.name === 'Ouro' ? stats.ouroList :
+                                 item.name === 'Prata' ? stats.prataList : stats.bronzeList
+                    openModal(`Parceiros ${item.name}`, list, `Total: ${item.value} parceiros`)
+                  }}
+                >
                   <div className="flex items-center gap-3">
                     <div
                       className="w-4 h-4 rounded-full"
@@ -326,7 +757,7 @@ export default function TabDiagnostico() {
 
         {/* Performance */}
         <div className="card p-6">
-          <h3 className="font-bold text-slate-900 mb-6">Performance dos Parceiros Ativos</h3>
+          <h3 className="font-bold text-slate-900 mb-6">Performance dos Parceiros (Filtrado)</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barDataPerformance} layout="vertical">
@@ -394,20 +825,7 @@ export default function TabDiagnostico() {
           {showFilters && (
             <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-4">
               <div>
-                <label className="block text-xs text-slate-500 mb-1">Categoria</label>
-                <select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-loara-500"
-                >
-                  <option value="todos">Todas as categorias</option>
-                  <option value="Ouro">🥇 Ouro ({stats.ouro})</option>
-                  <option value="Prata">🥈 Prata ({stats.prata})</option>
-                  <option value="Bronze">🥉 Bronze ({stats.bronze})</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs text-slate-500 mb-1">Filtrar por</label>
+                <label className="block text-xs text-slate-500 mb-1">Filtrar por Status</label>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
@@ -570,27 +988,34 @@ export default function TabDiagnostico() {
       {/* Legenda */}
       <div className="card p-6">
         <h3 className="font-bold text-slate-900 mb-4">Como usar</h3>
-        <div className="grid md:grid-cols-3 gap-4 text-sm">
+        <div className="grid md:grid-cols-4 gap-4 text-sm">
+          <div className="p-4 bg-slate-50 rounded-xl">
+            <h4 className="font-semibold text-slate-700 mb-2 flex items-center gap-2">
+              <Filter className="w-4 h-4 text-loara-500" />
+              Filtros Globais
+            </h4>
+            <p className="text-slate-600">Use as checkboxes no topo para filtrar por tipo de parceria. Isso afeta todos os cards, gráficos e a tabela.</p>
+          </div>
+          <div className="p-4 bg-slate-50 rounded-xl">
+            <h4 className="font-semibold text-slate-700 mb-2 flex items-center gap-2">
+              <Eye className="w-4 h-4 text-sky-500" />
+              Cards Interativos
+            </h4>
+            <p className="text-slate-600">Clique em qualquer card ou passe o mouse para ver quem são os parceiros daquela métrica.</p>
+          </div>
           <div className="p-4 bg-slate-50 rounded-xl">
             <h4 className="font-semibold text-slate-700 mb-2 flex items-center gap-2">
               <Star className="w-4 h-4 text-amber-500" />
               High Performer
             </h4>
-            <p className="text-slate-600">Clique na estrela ao lado do nome para marcar um parceiro como alta performance. Essa marcação é salva automaticamente.</p>
+            <p className="text-slate-600">Clique na estrela para marcar um parceiro como alta performance.</p>
           </div>
           <div className="p-4 bg-slate-50 rounded-xl">
             <h4 className="font-semibold text-slate-700 mb-2 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-rose-500" />
               Atenção
             </h4>
-            <p className="text-slate-600">Linhas em vermelho indicam parceiros há mais de 45 dias sem indicar. "Nunca indicou" significa que o parceiro nunca fez uma indicação.</p>
-          </div>
-          <div className="p-4 bg-slate-50 rounded-xl">
-            <h4 className="font-semibold text-slate-700 mb-2 flex items-center gap-2">
-              <Filter className="w-4 h-4 text-loara-500" />
-              Filtros
-            </h4>
-            <p className="text-slate-600">Use os filtros para encontrar parceiros por categoria, status de indicações ou ordenar por performance. Clique nos cabeçalhos para ordenar.</p>
+            <p className="text-slate-600">Linhas em vermelho indicam parceiros há mais de 45 dias sem indicar.</p>
           </div>
         </div>
       </div>
