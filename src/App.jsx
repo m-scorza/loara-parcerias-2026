@@ -14,6 +14,7 @@ import TabRiscos from './components/tabs/TabRiscos'
 import TabKPIs from './components/tabs/TabKPIs'
 import TabRoadmap from './components/tabs/TabRoadmap'
 import TabGovernanca from './components/tabs/TabGovernanca'
+import TabStatusComercial from './components/tabs/TabStatusComercial'
 
 function Dashboard() {
   const { data, loading } = useData()
@@ -47,6 +48,8 @@ function Dashboard() {
         return <TabRoadmap />
       case 'governanca':
         return <TabGovernanca />
+      case 'status':
+        return <TabStatusComercial />
       default:
         return <TabSumario />
     }

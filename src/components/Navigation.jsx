@@ -9,11 +9,13 @@ import {
   BarChart3,
   Map,
   Building2,
-  PieChart
+  PieChart,
+  Activity
 } from 'lucide-react'
 
 const tabs = [
   { id: 'sumario', label: 'Sumário', icon: LayoutDashboard },
+  { id: 'status', label: 'Status Comercial', icon: Activity },
   { id: 'cenarios', label: 'Cenários', icon: Target },
   { id: 'metas', label: 'Metas', icon: TrendingUp },
   { id: 'diagnostico', label: 'Diagnóstico', icon: Search },
