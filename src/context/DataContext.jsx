@@ -2,6 +2,11 @@ import { createContext, useContext, useState, useEffect } from 'react'
 
 const DataContext = createContext()
 
+// Versão dos dados - incrementar sempre que data.json for atualizado significativamente
+const DATA_VERSION = '2026.02.02'
+const STORAGE_KEY = 'loara-planejamento-2026'
+const VERSION_KEY = 'loara-planejamento-version'
+
 export function DataProvider({ children }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -14,23 +19,31 @@ export function DataProvider({ children }) {
 
   const loadData = async () => {
     try {
-      // Try to load from localStorage first
-      const savedData = localStorage.getItem('loara-planejamento-2026')
-      if (savedData) {
+      // Verifica se a versão dos dados no localStorage está atualizada
+      const savedVersion = localStorage.getItem(VERSION_KEY)
+      const savedData = localStorage.getItem(STORAGE_KEY)
+
+      // Se a versão é diferente ou não existe, força recarregar do servidor
+      const needsRefresh = savedVersion !== DATA_VERSION
+
+      if (!needsRefresh && savedData) {
         const parsedData = JSON.parse(savedData)
-        // Check if data has parceiros_lista, if not, reload from data.json
-        if (parsedData.parceiros_lista && parsedData.parceiros_lista.length > 0) {
+        // Verificação adicional: os dados precisam ter os campos corretos
+        if (parsedData.parceiros_lista &&
+            parsedData.parceiros_lista.length > 0 &&
+            parsedData.parceiros_lista[0].hasOwnProperty('empresasCIC')) {
           setData(parsedData)
           setLoading(false)
           return
         }
       }
 
-      // Otherwise load from data.json
+      // Carrega dados frescos do data.json
       const response = await fetch('./data.json')
       const jsonData = await response.json()
       setData(jsonData)
-      localStorage.setItem('loara-planejamento-2026', JSON.stringify(jsonData))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(jsonData))
+      localStorage.setItem(VERSION_KEY, DATA_VERSION)
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -68,17 +81,21 @@ export function DataProvider({ children }) {
   }
 
   const saveData = () => {
-    localStorage.setItem('loara-planejamento-2026', JSON.stringify(data))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    localStorage.setItem(VERSION_KEY, DATA_VERSION)
     setHasChanges(false)
   }
 
   const resetData = async () => {
-    localStorage.removeItem('loara-planejamento-2026')
+    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(VERSION_KEY)
     setLoading(true)
     try {
       const response = await fetch('./data.json')
       const jsonData = await response.json()
       setData(jsonData)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(jsonData))
+      localStorage.setItem(VERSION_KEY, DATA_VERSION)
       setHasChanges(false)
     } catch (error) {
       console.error('Error resetting data:', error)
@@ -101,7 +118,8 @@ export function DataProvider({ children }) {
     try {
       const importedData = JSON.parse(jsonString)
       setData(importedData)
-      localStorage.setItem('loara-planejamento-2026', JSON.stringify(importedData))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(importedData))
+      localStorage.setItem(VERSION_KEY, DATA_VERSION)
       setHasChanges(false)
       return true
     } catch (error) {
