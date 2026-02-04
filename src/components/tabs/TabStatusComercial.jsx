@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useData } from '../../context/DataContext'
 import {
   FileText, Send, UserPlus, AlertTriangle, CheckCircle2,
@@ -7,86 +7,6 @@ import {
   BarChart3, ArrowRight, Users, Building2, Edit3, Save, X,
   Plus, Trash2, ChevronDown
 } from 'lucide-react'
-
-// Dados iniciais das semanas (será movido para context/data)
-const initialStatusData = {
-  semana_19_25: {
-    id: 'semana_19_25',
-    label: 'Semana 19/01 - 25/01',
-    foco: 'Execução',
-    periodo: { inicio: '2026-01-19', fim: '2026-01-25' },
-    kpis: {
-      contratos: 2,
-      minutas: 5,
-      novosLeads: 0,
-      alertas: 1,
-      alertaTexto: '1 No-Show'
-    },
-    insights: {
-      positivos: [
-        'Semana de alta conversão de pipeline maduro',
-        'Limpeza de funil realizada com sucesso',
-        '2 contratos emitidos de reuniões anteriores'
-      ],
-      atencao: [
-        '1 no-show registrado (Ribeiro Salgados)',
-        'Panimundi desenquadrou na varredura'
-      ]
-    },
-    atividades: [
-      { empresa: 'Indústria Têxtil Tatuí', responsavel: 'Marcos', status: 'contrato', detalhe: 'Visita 20/01' },
-      { empresa: 'Grupo Moby Dick', responsavel: 'Eric', status: 'contrato', detalhe: 'Reunião 19/01' },
-      { empresa: 'Movitra e Sr. Alves', responsavel: 'Luciano Macedo', status: 'minuta', detalhe: 'Reunião 22/01' },
-      { empresa: 'Albassi', responsavel: 'Beccari', status: 'minuta', detalhe: 'Reunião 23/01' },
-      { empresa: 'Riopar', responsavel: 'Bruno Roquini', status: 'minuta', detalhe: 'Reunião 20/01' },
-      { empresa: 'Cerâmica Strufaldi', responsavel: 'Marcos', status: 'minuta', detalhe: 'Visita 20/01' },
-      { empresa: 'Thor Implementos', responsavel: 'Thales', status: 'minuta', detalhe: 'Reunião 20/01' },
-      { empresa: 'GF Engenharia', responsavel: 'Celso', status: 'varredura', detalhe: 'Em análise' },
-      { empresa: 'Panimundi', responsavel: 'Bruno Roquini', status: 'congelada', detalhe: 'Desenquadrou na varredura' },
-      { empresa: 'Ribeiro Salgados', responsavel: 'Thales', status: 'noshow', detalhe: 'Reagendar' },
-      { empresa: 'Wert', responsavel: 'Luciano Macedo', status: 'descartada', detalhe: 'Restritivos' },
-    ],
-    followups: []
-  },
-  semana_26_30: {
-    id: 'semana_26_30',
-    label: 'Semana 26/01 - 30/01',
-    foco: 'Prospecção & Onboarding',
-    periodo: { inicio: '2026-01-26', fim: '2026-01-30' },
-    kpis: {
-      contratos: 0,
-      minutas: 1,
-      novosLeads: 4,
-      alertas: 1,
-      alertaTexto: 'Eficiência Onboarding'
-    },
-    insights: {
-      positivos: [
-        'Evento de 26 e 27/01 teve bom feedback',
-        'Visita presencial dos parceiros Eric e Claudio na terça (27/01) reforçou a cultura',
-        '4 novos leads qualificados entraram no funil'
-      ],
-      atencao: [
-        'Baixo ROI: Mobilizar o time inteiro para apenas 3 parceiros novos foi contraproducente',
-        'Rever modelo para próximas edições do evento',
-        '2 empresas descartadas por restritivos'
-      ]
-    },
-    atividades: [
-      { empresa: 'BBB Madeiras', responsavel: 'Eric', status: 'minuta', detalhe: 'Reunião realizada 26/01' },
-      { empresa: 'Casa de Carnes Califórnia', responsavel: 'Celso Miguel', status: 'agendar', detalhe: 'Marcar reunião' },
-      { empresa: 'Ezlan Empreendimentos', responsavel: 'Vanessa', status: 'agendar', detalhe: 'Marcar reunião' },
-      { empresa: 'Estilo 360 Vestuário', responsavel: 'Claudine', status: 'agendar', detalhe: 'Marcar reunião' },
-      { empresa: 'Hyde Alimentos', responsavel: 'Eric', status: 'agendar', detalhe: 'Marcar reunião' },
-      { empresa: 'Amaral e Passos', responsavel: 'Claudine', status: 'descartada', detalhe: 'Restritivos' },
-      { empresa: 'Império Imports', responsavel: 'Claudine', status: 'descartada', detalhe: 'Restritivos' },
-    ],
-    followups: [
-      { empresa: 'Lead Renato', responsavel: '-', status: 'minuta', observacao: 'Aguardando resposta' },
-      { empresa: 'Marcelo e Nelson', responsavel: '-', status: 'followup', observacao: 'Estratégia: Provocação com posts de comissão' },
-    ]
-  }
-}
 
 // Configuração dos status (pills)
 const statusConfig = {
@@ -775,21 +695,11 @@ export default function TabStatusComercial() {
   const { data, updateData, editMode } = useData()
   const [selectedPeriod, setSelectedPeriod] = useState('semana_19_25')
 
-  // Usar dados do context ou iniciais
-  const [statusData, setStatusData] = useState(() => {
-    return data.status_comercial || initialStatusData
-  })
+  // Usar dados diretamente do context (já garantido que existe no DataContext)
+  const statusData = data.status_comercial
 
-  // Sincronizar com context
-  useEffect(() => {
-    if (data.status_comercial) {
-      setStatusData(data.status_comercial)
-    }
-  }, [data.status_comercial])
-
-  // Salvar alterações no context
+  // Salvar alterações no context (agora com auto-save)
   const saveToContext = (newData) => {
-    setStatusData(newData)
     updateData('status_comercial', newData)
   }
 

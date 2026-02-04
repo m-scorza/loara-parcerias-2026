@@ -97,10 +97,8 @@ function ParceiroListModal({ isOpen, onClose, title, parceiros, subtitle }) {
   )
 }
 
-// Card clicável com hover interativo
-function InteractiveStatCard({ title, value, subtitle, color, icon: Icon, onClick, parceiros }) {
-  const [showTooltip, setShowTooltip] = useState(false)
-
+// Card clicável sem tooltip
+function InteractiveStatCard({ title, value, subtitle, color, icon: Icon, onClick }) {
   const colorClasses = {
     loara: 'bg-loara-50 border-loara-200 text-loara-700',
     emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
@@ -117,16 +115,10 @@ function InteractiveStatCard({ title, value, subtitle, color, icon: Icon, onClic
     rose: 'bg-rose-100 text-rose-600',
   }
 
-  // Mostra até 5 parceiros no tooltip
-  const previewParceiros = parceiros?.slice(0, 5) || []
-  const hasMore = parceiros?.length > 5
-
   return (
     <div
-      className={`card p-5 border-2 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] relative ${colorClasses[color] || colorClasses.loara}`}
+      className={`card p-5 border-2 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${colorClasses[color] || colorClasses.loara}`}
       onClick={onClick}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
     >
       <div className="flex items-start justify-between">
         <div>
@@ -140,45 +132,20 @@ function InteractiveStatCard({ title, value, subtitle, color, icon: Icon, onClic
           </div>
         )}
       </div>
-      <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs opacity-60">
+      <div className="mt-3 pt-3 border-t border-current/10 flex items-center gap-1 text-xs opacity-60">
         <Eye className="w-3 h-3" />
-        <span>Clique para ver</span>
+        <span>Clique para ver detalhes</span>
       </div>
-
-      {/* Tooltip com preview */}
-      {showTooltip && parceiros && parceiros.length > 0 && (
-        <div className="absolute left-0 right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-xl border border-slate-200 p-3 animate-fadeIn">
-          <div className="text-xs font-semibold text-slate-500 mb-2">Preview:</div>
-          <div className="space-y-1">
-            {previewParceiros.map((p, i) => (
-              <div key={i} className="text-sm text-slate-700 truncate">
-                • {p.nome}
-              </div>
-            ))}
-            {hasMore && (
-              <div className="text-xs text-slate-400 mt-1">
-                +{parceiros.length - 5} mais...
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
 
-// Card de resultado clicável
-function InteractiveResultCard({ title, value, subtitle, icon: Icon, borderColor, textColor, onClick, parceiros }) {
-  const [showTooltip, setShowTooltip] = useState(false)
-  const previewParceiros = parceiros?.slice(0, 5) || []
-  const hasMore = parceiros?.length > 5
-
+// Card de resultado clicável sem tooltip
+function InteractiveResultCard({ title, value, subtitle, icon: Icon, borderColor, textColor, onClick }) {
   return (
     <div
-      className={`card p-5 border-l-4 ${borderColor} cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] relative`}
+      className={`card p-5 border-l-4 ${borderColor} cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]`}
       onClick={onClick}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
     >
       <div className="flex items-center justify-between">
         <div>
@@ -188,28 +155,10 @@ function InteractiveResultCard({ title, value, subtitle, icon: Icon, borderColor
         <Icon className={`w-10 h-10 ${textColor.replace('text-', 'text-').replace('-600', '-500')}`} />
       </div>
       {subtitle && <p className="text-xs text-slate-400 mt-2">{subtitle}</p>}
-      <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs text-slate-400">
+      <div className="mt-2 flex items-center gap-1 text-xs text-slate-400">
         <Eye className="w-3 h-3" />
+        <span>Clique para ver</span>
       </div>
-
-      {/* Tooltip com preview */}
-      {showTooltip && parceiros && parceiros.length > 0 && (
-        <div className="absolute left-0 right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-xl border border-slate-200 p-3 animate-fadeIn">
-          <div className="text-xs font-semibold text-slate-500 mb-2">Preview:</div>
-          <div className="space-y-1">
-            {previewParceiros.map((p, i) => (
-              <div key={i} className="text-sm text-slate-700 truncate">
-                • {p.nome}
-              </div>
-            ))}
-            {hasMore && (
-              <div className="text-xs text-slate-400 mt-1">
-                +{parceiros.length - 5} mais...
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -420,11 +369,42 @@ export default function TabDiagnostico() {
   ].filter(d => d.value > 0)
 
   const barDataPerformance = [
-    { name: 'Com Indicações', value: stats.comIndicacoes, fill: '#10B981' },
-    { name: 'Sem Indicações', value: stats.semIndicacoes, fill: '#F59E0B' },
-    { name: 'Empresas CIC', value: stats.comCIC, fill: '#6370f1' },
-    { name: 'Com Crédito Tomado', value: stats.comResultado, fill: '#0ea5e9' },
+    { name: 'Com Indicações', value: stats.comIndicacoes, fill: '#10B981', key: 'comIndicacoes' },
+    { name: 'Sem Indicações', value: stats.semIndicacoes, fill: '#F59E0B', key: 'semIndicacoes' },
+    { name: 'Empresas CIC', value: stats.comCIC, fill: '#6370f1', key: 'comCIC' },
+    { name: 'Com Crédito Tomado', value: stats.comResultado, fill: '#0ea5e9', key: 'comResultado' },
   ]
+
+  // Handler para clique no gráfico de barras
+  const handleBarClick = (key) => {
+    const barConfig = {
+      comIndicacoes: {
+        title: 'Parceiros com Indicações',
+        list: stats.comIndicacoesList,
+        subtitle: `${stats.comIndicacoes} parceiros que já fizeram indicações`
+      },
+      semIndicacoes: {
+        title: 'Parceiros sem Indicações',
+        list: stats.semIndicacoesList,
+        subtitle: `${stats.semIndicacoes} parceiros que nunca indicaram`
+      },
+      comCIC: {
+        title: 'Parceiros com Empresas CIC',
+        list: stats.comCICList,
+        subtitle: `${stats.comCIC} parceiros com contratos assinados`
+      },
+      comResultado: {
+        title: 'Parceiros com Crédito Tomado',
+        list: stats.comResultadoList,
+        subtitle: `${stats.comResultado} parceiros geraram crédito`
+      }
+    }
+
+    const config = barConfig[key]
+    if (config) {
+      openModal(config.title, config.list, config.subtitle)
+    }
+  }
 
   // Contagem de categorias ativas para label do filtro
   const activeCategoriesCount = Object.values(selectedCategories).filter(Boolean).length
@@ -755,19 +735,47 @@ export default function TabDiagnostico() {
           </div>
         </div>
 
-        {/* Performance */}
+        {/* Performance - Agora Clicável */}
         <div className="card p-6">
-          <h3 className="font-bold text-slate-900 mb-6">Performance dos Parceiros (Filtrado)</h3>
+          <h3 className="font-bold text-slate-900 mb-2">Performance dos Parceiros (Filtrado)</h3>
+          <p className="text-xs text-slate-500 mb-4">Clique em uma barra para ver os parceiros</p>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barDataPerformance} layout="vertical">
+              <BarChart
+                data={barDataPerformance}
+                layout="vertical"
+                onClick={(data) => {
+                  if (data && data.activePayload && data.activePayload[0]) {
+                    const item = data.activePayload[0].payload
+                    handleBarClick(item.key)
+                  }
+                }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis type="number" />
                 <YAxis dataKey="name" type="category" width={120} fontSize={12} />
-                <Tooltip />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                <Tooltip
+                  cursor={{ fill: 'rgba(99, 112, 241, 0.1)' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white p-3 rounded-lg shadow-lg border border-slate-200">
+                          <p className="font-semibold text-slate-900">{payload[0].payload.name}</p>
+                          <p className="text-sm text-slate-600">{payload[0].value} parceiros</p>
+                          <p className="text-xs text-loara-600 mt-1">Clique para ver lista</p>
+                        </div>
+                      )
+                    }
+                    return null
+                  }}
+                />
+                <Bar
+                  dataKey="value"
+                  radius={[0, 4, 4, 0]}
+                  cursor="pointer"
+                >
                   {barDataPerformance.map((entry, index) => (
-                    <Cell key={index} fill={entry.fill} />
+                    <Cell key={index} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
                   ))}
                 </Bar>
               </BarChart>

@@ -1,10 +1,13 @@
 import { useData } from '../context/DataContext'
-import { Pencil, Save, RotateCcw, Download, Upload, FileText, X, Check } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { Pencil, Save, RotateCcw, Download, Upload, FileText, X, Check, LogOut, User } from 'lucide-react'
 import { useState, useRef } from 'react'
 
 export default function Header() {
   const { data, editMode, setEditMode, hasChanges, saveData, resetData, exportData, importData } = useData()
+  const { user, logout } = useAuth()
   const [showImport, setShowImport] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
   const fileInputRef = useRef(null)
 
   const handleFileImport = (e) => {
@@ -40,11 +43,50 @@ export default function Header() {
           </div>
 
           <div className="flex flex-col items-start lg:items-end gap-4">
-            {/* Badge cenário */}
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-emerald-300 font-semibold text-sm">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-              {data.textos.header_badge}
-            </span>
+            {/* User & Badge */}
+            <div className="flex items-center gap-3">
+              {/* Badge cenário */}
+              <span className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-emerald-300 font-semibold text-sm">
+                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                {data.textos.header_badge}
+              </span>
+
+              {/* User Menu */}
+              {user && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium">
+                        {user.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium hidden sm:block">{user.name}</span>
+                  </button>
+
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 animate-fadeIn">
+                      <div className="px-4 py-2 border-b border-slate-100">
+                        <div className="font-medium text-slate-900">{user.name}</div>
+                        <div className="text-xs text-slate-500">{user.email}</div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false)
+                          logout()
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sair
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Actions */}
             <div className="flex items-center gap-2">

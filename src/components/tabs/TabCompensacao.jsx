@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useData } from '../../context/DataContext'
 import { formatCurrency } from '../../utils/format'
 import { User, Target, DollarSign, Award, TrendingUp, Edit3, Save, X, Calculator, Info } from 'lucide-react'
@@ -8,6 +8,11 @@ function EditableValue({ value, onChange, type = 'number', formatter, prefix = '
   const { editMode } = useData()
   const [isEditing, setIsEditing] = useState(false)
   const [tempValue, setTempValue] = useState(value)
+
+  // Sincronizar tempValue quando value muda externamente
+  useEffect(() => {
+    setTempValue(value)
+  }, [value])
 
   const handleSave = () => {
     onChange(type === 'number' ? parseFloat(tempValue) || 0 : tempValue)
@@ -68,61 +73,48 @@ function EditableValue({ value, onChange, type = 'number', formatter, prefix = '
   )
 }
 
-// Estrutura de comissões editável
-function ComissaoCard({ title, items, bgColor, textColor, onItemChange }) {
-  const { editMode } = useData()
-
-  return (
-    <div className={`p-5 ${bgColor} rounded-xl`}>
-      <h4 className={`font-bold ${textColor} mb-4`}>{title}</h4>
-      <div className="space-y-3">
-        {items.map((item, i) => (
-          <div key={i} className="flex justify-between text-sm">
-            <span className="text-slate-600">{item.label}</span>
-            {editMode ? (
-              <EditableValue
-                value={item.value}
-                onChange={(v) => onItemChange(i, v)}
-                formatter={formatCurrency}
-                className="font-semibold"
-              />
-            ) : (
-              <span className="font-semibold">{formatCurrency(item.value)}</span>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+// Valores padrão para estrutura de comissões
+const defaultComissoes = {
+  aquisicao: {
+    parceiroQualificado: 500,
+    primeiroContrato: 1000,
+    primeiroCredito: 500
+  },
+  recorrente: {
+    ouro: 200,
+    prata: 100,
+    bronze: 50
+  },
+  bonus: {
+    faixa80: 1500,
+    faixa90: 2500,
+    faixa100: 4000,
+    faixa110: 5000
+  }
 }
 
 export default function TabCompensacao() {
   const { data, updateData, editMode } = useData()
   const g = data.gerentes.matheus_scorza
 
-  // Estado local para valores de comissão (estrutura editável)
-  const [comissaoAquisicao, setComissaoAquisicao] = useState({
-    parceiroQualificado: 500,
-    primeiroContrato: 1000,
-    primeiroCredito: 500
-  })
+  // Inicializar estrutura de comissões no data se não existir
+  useEffect(() => {
+    if (!data.estrutura_comissoes) {
+      updateData('estrutura_comissoes', defaultComissoes)
+    }
+  }, [])
 
-  const [comissaoRecorrente, setComissaoRecorrente] = useState({
-    ouro: 200,
-    prata: 100,
-    bronze: 50
-  })
-
-  const [bonusTrimestral, setBonusTrimestral] = useState({
-    faixa80: 1500,
-    faixa90: 2500,
-    faixa100: 4000,
-    faixa110: 5000
-  })
+  // Usar dados do context ou valores padrão
+  const comissoes = data.estrutura_comissoes || defaultComissoes
 
   // Função para atualizar valor no data.json
   const handleUpdate = (path, value) => {
     updateData(path, value)
+  }
+
+  // Atualizar comissões no context
+  const updateComissao = (tipo, campo, valor) => {
+    updateData(`estrutura_comissoes.${tipo}.${campo}`, valor)
   }
 
   // Recalcular total de compensação automaticamente
@@ -439,39 +431,39 @@ export default function TabCompensacao() {
                 <span className="text-slate-600">Parceiro Qualificado</span>
                 {editMode ? (
                   <EditableValue
-                    value={comissaoAquisicao.parceiroQualificado}
-                    onChange={(v) => setComissaoAquisicao(prev => ({ ...prev, parceiroQualificado: v }))}
+                    value={comissoes.aquisicao.parceiroQualificado}
+                    onChange={(v) => updateComissao('aquisicao', 'parceiroQualificado', v)}
                     formatter={formatCurrency}
                     className="font-semibold"
                   />
                 ) : (
-                  <span className="font-semibold">{formatCurrency(comissaoAquisicao.parceiroQualificado)}</span>
+                  <span className="font-semibold">{formatCurrency(comissoes.aquisicao.parceiroQualificado)}</span>
                 )}
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Primeiro Contrato</span>
                 {editMode ? (
                   <EditableValue
-                    value={comissaoAquisicao.primeiroContrato}
-                    onChange={(v) => setComissaoAquisicao(prev => ({ ...prev, primeiroContrato: v }))}
+                    value={comissoes.aquisicao.primeiroContrato}
+                    onChange={(v) => updateComissao('aquisicao', 'primeiroContrato', v)}
                     formatter={formatCurrency}
                     className="font-semibold"
                   />
                 ) : (
-                  <span className="font-semibold">{formatCurrency(comissaoAquisicao.primeiroContrato)}</span>
+                  <span className="font-semibold">{formatCurrency(comissoes.aquisicao.primeiroContrato)}</span>
                 )}
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Primeiro Crédito</span>
                 {editMode ? (
                   <EditableValue
-                    value={comissaoAquisicao.primeiroCredito}
-                    onChange={(v) => setComissaoAquisicao(prev => ({ ...prev, primeiroCredito: v }))}
+                    value={comissoes.aquisicao.primeiroCredito}
+                    onChange={(v) => updateComissao('aquisicao', 'primeiroCredito', v)}
                     formatter={formatCurrency}
                     className="font-semibold"
                   />
                 ) : (
-                  <span className="font-semibold">{formatCurrency(comissaoAquisicao.primeiroCredito)}</span>
+                  <span className="font-semibold">{formatCurrency(comissoes.aquisicao.primeiroCredito)}</span>
                 )}
               </div>
             </div>
@@ -485,42 +477,42 @@ export default function TabCompensacao() {
                 <span className="text-slate-600">Parceiro OURO</span>
                 {editMode ? (
                   <EditableValue
-                    value={comissaoRecorrente.ouro}
-                    onChange={(v) => setComissaoRecorrente(prev => ({ ...prev, ouro: v }))}
+                    value={comissoes.recorrente.ouro}
+                    onChange={(v) => updateComissao('recorrente', 'ouro', v)}
                     formatter={formatCurrency}
                     suffix="/mês"
                     className="font-semibold"
                   />
                 ) : (
-                  <span className="font-semibold">{formatCurrency(comissaoRecorrente.ouro)}/mês</span>
+                  <span className="font-semibold">{formatCurrency(comissoes.recorrente.ouro)}/mês</span>
                 )}
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Parceiro PRATA</span>
                 {editMode ? (
                   <EditableValue
-                    value={comissaoRecorrente.prata}
-                    onChange={(v) => setComissaoRecorrente(prev => ({ ...prev, prata: v }))}
+                    value={comissoes.recorrente.prata}
+                    onChange={(v) => updateComissao('recorrente', 'prata', v)}
                     formatter={formatCurrency}
                     suffix="/mês"
                     className="font-semibold"
                   />
                 ) : (
-                  <span className="font-semibold">{formatCurrency(comissaoRecorrente.prata)}/mês</span>
+                  <span className="font-semibold">{formatCurrency(comissoes.recorrente.prata)}/mês</span>
                 )}
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Parceiro BRONZE</span>
                 {editMode ? (
                   <EditableValue
-                    value={comissaoRecorrente.bronze}
-                    onChange={(v) => setComissaoRecorrente(prev => ({ ...prev, bronze: v }))}
+                    value={comissoes.recorrente.bronze}
+                    onChange={(v) => updateComissao('recorrente', 'bronze', v)}
                     formatter={formatCurrency}
                     suffix="/mês"
                     className="font-semibold"
                   />
                 ) : (
-                  <span className="font-semibold">{formatCurrency(comissaoRecorrente.bronze)}/mês</span>
+                  <span className="font-semibold">{formatCurrency(comissoes.recorrente.bronze)}/mês</span>
                 )}
               </div>
             </div>
@@ -534,52 +526,52 @@ export default function TabCompensacao() {
                 <span className="text-slate-600">80-89% meta</span>
                 {editMode ? (
                   <EditableValue
-                    value={bonusTrimestral.faixa80}
-                    onChange={(v) => setBonusTrimestral(prev => ({ ...prev, faixa80: v }))}
+                    value={comissoes.bonus.faixa80}
+                    onChange={(v) => updateComissao('bonus', 'faixa80', v)}
                     formatter={formatCurrency}
                     className="font-semibold"
                   />
                 ) : (
-                  <span className="font-semibold">{formatCurrency(bonusTrimestral.faixa80)}</span>
+                  <span className="font-semibold">{formatCurrency(comissoes.bonus.faixa80)}</span>
                 )}
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">90-99% meta</span>
                 {editMode ? (
                   <EditableValue
-                    value={bonusTrimestral.faixa90}
-                    onChange={(v) => setBonusTrimestral(prev => ({ ...prev, faixa90: v }))}
+                    value={comissoes.bonus.faixa90}
+                    onChange={(v) => updateComissao('bonus', 'faixa90', v)}
                     formatter={formatCurrency}
                     className="font-semibold"
                   />
                 ) : (
-                  <span className="font-semibold">{formatCurrency(bonusTrimestral.faixa90)}</span>
+                  <span className="font-semibold">{formatCurrency(comissoes.bonus.faixa90)}</span>
                 )}
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">100-109% meta</span>
                 {editMode ? (
                   <EditableValue
-                    value={bonusTrimestral.faixa100}
-                    onChange={(v) => setBonusTrimestral(prev => ({ ...prev, faixa100: v }))}
+                    value={comissoes.bonus.faixa100}
+                    onChange={(v) => updateComissao('bonus', 'faixa100', v)}
                     formatter={formatCurrency}
                     className="font-semibold"
                   />
                 ) : (
-                  <span className="font-semibold">{formatCurrency(bonusTrimestral.faixa100)}</span>
+                  <span className="font-semibold">{formatCurrency(comissoes.bonus.faixa100)}</span>
                 )}
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">≥110% meta</span>
                 {editMode ? (
                   <EditableValue
-                    value={bonusTrimestral.faixa110}
-                    onChange={(v) => setBonusTrimestral(prev => ({ ...prev, faixa110: v }))}
+                    value={comissoes.bonus.faixa110}
+                    onChange={(v) => updateComissao('bonus', 'faixa110', v)}
                     formatter={formatCurrency}
                     className="font-semibold text-violet-700"
                   />
                 ) : (
-                  <span className="font-semibold text-violet-700">{formatCurrency(bonusTrimestral.faixa110)}</span>
+                  <span className="font-semibold text-violet-700">{formatCurrency(comissoes.bonus.faixa110)}</span>
                 )}
               </div>
             </div>

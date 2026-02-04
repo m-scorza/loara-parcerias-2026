@@ -1,7 +1,7 @@
 import { useData } from '../../context/DataContext'
 import { formatCurrency } from '../../utils/format'
 import EditableField from '../EditableField'
-import { Star, TrendingUp, Shield, Zap } from 'lucide-react'
+import { Star, Shield, Zap } from 'lucide-react'
 
 const scenarioConfig = {
   conservador: {
@@ -171,18 +171,6 @@ export default function TabCenarios() {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Investimento</span>
-                    <span className="font-semibold">
-                      <EditableField
-                        path={`cenarios.${key}.investimento`}
-                        value={scenario.investimento}
-                        formatter={formatCurrency}
-                        type="number"
-                        parser={parseFloat}
-                      />
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Margem</span>
                     <span className="font-semibold">
                       <EditableField
@@ -196,9 +184,9 @@ export default function TabCenarios() {
                   </div>
                 </div>
 
-                {/* Receita e ROI */}
+                {/* Receita */}
                 <div className="pt-4 border-t border-slate-100">
-                  <div className="flex justify-between items-center mb-3">
+                  <div className="flex justify-between items-center">
                     <span className="text-slate-600 font-medium">Receita Total</span>
                     <span className="text-2xl font-bold text-emerald-600">
                       <EditableField
@@ -209,40 +197,6 @@ export default function TabCenarios() {
                         parser={parseFloat}
                       />
                     </span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm mb-4">
-                    <span className="text-slate-500">ROI</span>
-                    <span className="font-bold text-loara-600">
-                      <EditableField
-                        path={`cenarios.${key}.roi`}
-                        value={scenario.roi}
-                        formatter={(v) => `${v}%`}
-                        type="number"
-                        parser={parseInt}
-                      />
-                    </span>
-                  </div>
-
-                  {/* Barra de probabilidade */}
-                  <div>
-                    <div className="flex justify-between text-xs text-slate-500 mb-1">
-                      <span>Probabilidade de Sucesso</span>
-                      <span className="font-semibold">
-                        <EditableField
-                          path={`cenarios.${key}.prob_sucesso`}
-                          value={scenario.prob_sucesso}
-                          formatter={(v) => `${v}%`}
-                          type="number"
-                          parser={parseInt}
-                        />
-                      </span>
-                    </div>
-                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full bg-gradient-to-r ${config.gradient} transition-all duration-500`}
-                        style={{ width: `${scenario.prob_sucesso}%` }}
-                      ></div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -276,9 +230,6 @@ export default function TabCenarios() {
                 { label: 'Operações', key: 'operacoes' },
                 { label: 'Captação', key: 'captacao', format: formatCurrency },
                 { label: 'Receita', key: 'receita', format: formatCurrency, highlight: true },
-                { label: 'Investimento', key: 'investimento', format: formatCurrency },
-                { label: 'ROI', key: 'roi', suffix: '%' },
-                { label: 'Prob. Sucesso', key: 'prob_sucesso', suffix: '%' },
               ].map((row, i) => (
                 <tr key={i} className={`border-b last:border-0 ${row.highlight ? 'bg-emerald-50/50' : 'hover:bg-slate-50'}`}>
                   <td className={`p-4 font-medium ${row.highlight ? 'text-emerald-800' : ''}`}>{row.label}</td>
