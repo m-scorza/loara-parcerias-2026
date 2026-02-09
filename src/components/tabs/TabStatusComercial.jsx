@@ -785,7 +785,7 @@ export default function TabStatusComercial() {
   const [showNewModal, setShowNewModal] = useState(false)
 
   // Usar dados diretamente do context (já garantido que existe no DataContext)
-  const statusData = data.status_comercial
+  const statusData = data?.status_comercial || {}
 
   // Salvar alterações no context (agora com auto-save)
   const saveToContext = (newData) => {
@@ -794,13 +794,17 @@ export default function TabStatusComercial() {
 
   // Gerar períodos dinamicamente a partir dos dados
   const periods = useMemo(() => {
-    const dynamicPeriods = Object.entries(statusData || {})
-      .filter(([key]) => key !== 'comparativo' && key.startsWith('semana'))
-      .map(([id, semana]) => ({
+    if (!statusData || Object.keys(statusData).length === 0) {
+      return [{ id: 'comparativo', label: 'Comparativo', foco: 'Visão Consolidada', color: 'emerald' }]
+    }
+
+    const dynamicPeriods = Object.entries(statusData)
+      .filter(([key, value]) => key !== 'comparativo' && key.startsWith('semana') && value)
+      .map(([id, semana], index) => ({
         id,
-        label: semana.label,
-        foco: semana.foco,
-        color: Object.keys(statusData).indexOf(id) % 2 === 0 ? 'loara' : 'violet'
+        label: semana?.label || id,
+        foco: semana?.foco || 'Execução',
+        color: index % 2 === 0 ? 'loara' : 'violet'
       }))
       .sort((a, b) => {
         // Ordenar por data se disponível, senão por ID
@@ -815,10 +819,13 @@ export default function TabStatusComercial() {
     ]
   }, [statusData])
 
-  // Selecionar primeiro período se nenhum selecionado
+  // Selecionar primeiro período se nenhum selecionado ou se o período atual não existe mais
   useEffect(() => {
-    if (!selectedPeriod && periods.length > 0) {
-      setSelectedPeriod(periods[0].id)
+    const periodExists = periods.some(p => p.id === selectedPeriod)
+    if ((!selectedPeriod || !periodExists) && periods.length > 0) {
+      // Seleciona o primeiro período que não seja comparativo, ou comparativo se for o único
+      const firstNonComparativo = periods.find(p => p.id !== 'comparativo')
+      setSelectedPeriod(firstNonComparativo?.id || periods[0].id)
     }
   }, [periods, selectedPeriod])
 
@@ -850,14 +857,16 @@ export default function TabStatusComercial() {
     }
   }
 
-  // Funções de atualização
+  // Funções de atualização - com verificações de segurança
   const updateKPI = (field, value) => {
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
     const newData = {
       ...statusData,
       [selectedPeriod]: {
         ...statusData[selectedPeriod],
         kpis: {
-          ...statusData[selectedPeriod].kpis,
+          ...(statusData[selectedPeriod]?.kpis || {}),
           [field]: value
         }
       }
@@ -866,14 +875,17 @@ export default function TabStatusComercial() {
   }
 
   const updateInsightPositivo = (index, value) => {
-    const newPositivos = [...statusData[selectedPeriod].insights.positivos]
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const newPositivos = [...(statusData[selectedPeriod]?.insights?.positivos || [])]
     newPositivos[index] = value
+    const currentPeriod = statusData[selectedPeriod] || {}
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
+        ...currentPeriod,
         insights: {
-          ...statusData[selectedPeriod].insights,
+          ...(currentPeriod.insights || {}),
           positivos: newPositivos
         }
       }
@@ -882,14 +894,17 @@ export default function TabStatusComercial() {
   }
 
   const updateInsightAtencao = (index, value) => {
-    const newAtencao = [...statusData[selectedPeriod].insights.atencao]
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const newAtencao = [...(statusData[selectedPeriod]?.insights?.atencao || [])]
     newAtencao[index] = value
+    const currentPeriod = statusData[selectedPeriod] || {}
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
+        ...currentPeriod,
         insights: {
-          ...statusData[selectedPeriod].insights,
+          ...(currentPeriod.insights || {}),
           atencao: newAtencao
         }
       }
@@ -898,13 +913,16 @@ export default function TabStatusComercial() {
   }
 
   const addInsightPositivo = () => {
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const currentPeriod = statusData[selectedPeriod] || {}
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
+        ...currentPeriod,
         insights: {
-          ...statusData[selectedPeriod].insights,
-          positivos: [...statusData[selectedPeriod].insights.positivos, 'Novo ponto positivo']
+          ...(currentPeriod.insights || {}),
+          positivos: [...(currentPeriod.insights?.positivos || []), 'Novo ponto positivo']
         }
       }
     }
@@ -912,13 +930,16 @@ export default function TabStatusComercial() {
   }
 
   const addInsightAtencao = () => {
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const currentPeriod = statusData[selectedPeriod] || {}
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
+        ...currentPeriod,
         insights: {
-          ...statusData[selectedPeriod].insights,
-          atencao: [...statusData[selectedPeriod].insights.atencao, 'Novo ponto de atenção']
+          ...(currentPeriod.insights || {}),
+          atencao: [...(currentPeriod.insights?.atencao || []), 'Novo ponto de atenção']
         }
       }
     }
@@ -926,13 +947,16 @@ export default function TabStatusComercial() {
   }
 
   const removeInsightPositivo = (index) => {
-    const newPositivos = statusData[selectedPeriod].insights.positivos.filter((_, i) => i !== index)
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const currentPeriod = statusData[selectedPeriod] || {}
+    const newPositivos = (currentPeriod.insights?.positivos || []).filter((_, i) => i !== index)
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
+        ...currentPeriod,
         insights: {
-          ...statusData[selectedPeriod].insights,
+          ...(currentPeriod.insights || {}),
           positivos: newPositivos
         }
       }
@@ -941,13 +965,16 @@ export default function TabStatusComercial() {
   }
 
   const removeInsightAtencao = (index) => {
-    const newAtencao = statusData[selectedPeriod].insights.atencao.filter((_, i) => i !== index)
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const currentPeriod = statusData[selectedPeriod] || {}
+    const newAtencao = (currentPeriod.insights?.atencao || []).filter((_, i) => i !== index)
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
+        ...currentPeriod,
         insights: {
-          ...statusData[selectedPeriod].insights,
+          ...(currentPeriod.insights || {}),
           atencao: newAtencao
         }
       }
@@ -956,12 +983,15 @@ export default function TabStatusComercial() {
   }
 
   const updateAtividade = (index, field, value) => {
-    const newAtividades = [...statusData[selectedPeriod].atividades]
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const currentPeriod = statusData[selectedPeriod] || {}
+    const newAtividades = [...(currentPeriod.atividades || [])]
     newAtividades[index] = { ...newAtividades[index], [field]: value }
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
+        ...currentPeriod,
         atividades: newAtividades
       }
     }
@@ -969,11 +999,14 @@ export default function TabStatusComercial() {
   }
 
   const addAtividade = () => {
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const currentPeriod = statusData[selectedPeriod] || {}
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
-        atividades: [...statusData[selectedPeriod].atividades, {
+        ...currentPeriod,
+        atividades: [...(currentPeriod.atividades || []), {
           empresa: 'Nova Empresa',
           responsavel: '-',
           status: 'agendar',
@@ -985,11 +1018,14 @@ export default function TabStatusComercial() {
   }
 
   const removeAtividade = (index) => {
-    const newAtividades = statusData[selectedPeriod].atividades.filter((_, i) => i !== index)
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const currentPeriod = statusData[selectedPeriod] || {}
+    const newAtividades = (currentPeriod.atividades || []).filter((_, i) => i !== index)
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
+        ...currentPeriod,
         atividades: newAtividades
       }
     }
@@ -997,12 +1033,15 @@ export default function TabStatusComercial() {
   }
 
   const updateFollowup = (index, field, value) => {
-    const newFollowups = [...statusData[selectedPeriod].followups]
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const currentPeriod = statusData[selectedPeriod] || {}
+    const newFollowups = [...(currentPeriod.followups || [])]
     newFollowups[index] = { ...newFollowups[index], [field]: value }
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
+        ...currentPeriod,
         followups: newFollowups
       }
     }
@@ -1010,11 +1049,14 @@ export default function TabStatusComercial() {
   }
 
   const addFollowup = () => {
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const currentPeriod = statusData[selectedPeriod] || {}
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
-        followups: [...(statusData[selectedPeriod].followups || []), {
+        ...currentPeriod,
+        followups: [...(currentPeriod.followups || []), {
           empresa: 'Novo Lead',
           responsavel: '-',
           status: 'followup',
@@ -1026,11 +1068,14 @@ export default function TabStatusComercial() {
   }
 
   const removeFollowup = (index) => {
-    const newFollowups = statusData[selectedPeriod].followups.filter((_, i) => i !== index)
+    if (!selectedPeriod || !statusData[selectedPeriod]) return
+
+    const currentPeriod = statusData[selectedPeriod] || {}
+    const newFollowups = (currentPeriod.followups || []).filter((_, i) => i !== index)
     const newData = {
       ...statusData,
       [selectedPeriod]: {
-        ...statusData[selectedPeriod],
+        ...currentPeriod,
         followups: newFollowups
       }
     }
@@ -1151,13 +1196,13 @@ export default function TabStatusComercial() {
       {/* Conteúdo baseado no período selecionado */}
       {selectedPeriod === 'comparativo' ? (
         <ComparativoView statusData={statusData} />
-      ) : (
+      ) : currentData ? (
         <>
           {/* KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
               title="Contratos Emitidos"
-              value={currentData.kpis.contratos}
+              value={currentData?.kpis?.contratos || 0}
               icon={FileText}
               color="emerald"
               subtitle="Sucessos da semana"
@@ -1166,7 +1211,7 @@ export default function TabStatusComercial() {
             />
             <KPICard
               title="Minutas Enviadas"
-              value={currentData.kpis.minutas}
+              value={currentData?.kpis?.minutas || 0}
               icon={Send}
               color="sky"
               subtitle="Pipeline quente"
@@ -1175,7 +1220,7 @@ export default function TabStatusComercial() {
             />
             <KPICard
               title="Novos Leads"
-              value={currentData.kpis.novosLeads}
+              value={currentData?.kpis?.novosLeads || 0}
               icon={UserPlus}
               color="amber"
               subtitle="Topo de funil"
@@ -1184,10 +1229,10 @@ export default function TabStatusComercial() {
             />
             <KPICard
               title="Alertas"
-              value={currentData.kpis.alertas}
+              value={currentData?.kpis?.alertas || 0}
               icon={AlertTriangle}
               color="rose"
-              subtitle={currentData.kpis.alertaTexto}
+              subtitle={currentData?.kpis?.alertaTexto || ''}
               onValueChange={(v) => updateKPI('alertas', v)}
               onSubtitleChange={(v) => updateKPI('alertaTexto', v)}
             />
@@ -1201,15 +1246,15 @@ export default function TabStatusComercial() {
               <Calendar className="w-5 h-5" />
             </div>
             <div>
-              <div className="font-semibold text-slate-800">{currentData.label}</div>
-              <div className="text-sm text-slate-500">Foco: {currentData.foco}</div>
+              <div className="font-semibold text-slate-800">{currentData?.label || selectedPeriod}</div>
+              <div className="text-sm text-slate-500">Foco: {currentData?.foco || 'Execução'}</div>
             </div>
           </div>
 
           {/* Insights */}
           <InsightsPanel
-            positivos={currentData.insights.positivos}
-            atencao={currentData.insights.atencao}
+            positivos={currentData?.insights?.positivos || []}
+            atencao={currentData?.insights?.atencao || []}
             onUpdatePositivos={updateInsightPositivo}
             onUpdateAtencao={updateInsightAtencao}
             onAddPositivo={addInsightPositivo}
@@ -1221,7 +1266,7 @@ export default function TabStatusComercial() {
           {/* Tabelas */}
           <div className="space-y-6">
             <AtividadesTable
-              atividades={currentData.atividades}
+              atividades={currentData?.atividades || []}
               title={selectedPeriod === 'semana_19_25' ? 'Atividades da Semana' : 'Novas Empresas (Entrada)'}
               onUpdate={updateAtividade}
               onAdd={addAtividade}
@@ -1229,7 +1274,7 @@ export default function TabStatusComercial() {
             />
 
             <FollowupsTable
-              followups={currentData.followups}
+              followups={currentData?.followups || []}
               onUpdate={updateFollowup}
               onAdd={addFollowup}
               onRemove={removeFollowup}
@@ -1249,6 +1294,10 @@ export default function TabStatusComercial() {
             </div>
           </div>
         </>
+      ) : (
+        <div className="card p-8 text-center text-slate-500">
+          <p>Selecione um período ou adicione uma nova semana para começar.</p>
+        </div>
       )}
     </div>
   )
