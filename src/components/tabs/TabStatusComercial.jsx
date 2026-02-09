@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useData } from '../../context/DataContext'
 import {
   FileText, Send, UserPlus, AlertTriangle, CheckCircle2,
@@ -555,136 +555,224 @@ function FollowupsTable({ followups, onUpdate, onAdd, onRemove }) {
   )
 }
 
-// Comparativo entre semanas
+// Comparativo entre semanas (dinâmico)
 function ComparativoView({ statusData }) {
-  const semana1 = statusData.semana_19_25
-  const semana2 = statusData.semana_26_30
+  // Pegar todas as semanas ordenadas
+  const semanas = Object.entries(statusData || {})
+    .filter(([key]) => key.startsWith('semana'))
+    .map(([id, data]) => ({ id, ...data }))
+    .sort((a, b) => {
+      const dateA = a.periodo?.inicio || a.id
+      const dateB = b.periodo?.inicio || b.id
+      return dateA.localeCompare(dateB)
+    })
+
+  if (semanas.length === 0) {
+    return (
+      <div className="card p-8 text-center text-slate-500">
+        Nenhuma semana cadastrada ainda. Adicione semanas para ver o comparativo.
+      </div>
+    )
+  }
+
+  // Calcular totais
+  const totals = semanas.reduce((acc, s) => ({
+    contratos: acc.contratos + (s.kpis?.contratos || 0),
+    minutas: acc.minutas + (s.kpis?.minutas || 0),
+    novosLeads: acc.novosLeads + (s.kpis?.novosLeads || 0),
+    alertas: acc.alertas + (s.kpis?.alertas || 0),
+    atividades: acc.atividades + (s.atividades?.length || 0)
+  }), { contratos: 0, minutas: 0, novosLeads: 0, alertas: 0, atividades: 0 })
+
+  const kpiConfig = [
+    { key: 'contratos', label: 'Contratos Emitidos', color: 'emerald' },
+    { key: 'minutas', label: 'Minutas Enviadas', color: 'sky' },
+    { key: 'novosLeads', label: 'Novos Leads', color: 'amber' },
+    { key: 'alertas', label: 'Alertas', color: 'rose' }
+  ]
 
   return (
     <div className="space-y-6">
-      {/* KPIs Comparativos */}
+      {/* KPIs Comparativos por semana */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="card p-4">
-          <div className="text-sm text-slate-500 mb-2">Contratos Emitidos</div>
-          <div className="flex items-end gap-4">
-            <div>
-              <div className="text-xs text-slate-400">Sem 1</div>
-              <div className="text-2xl font-bold text-emerald-600">{semana1.kpis.contratos}</div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-slate-300" />
-            <div>
-              <div className="text-xs text-slate-400">Sem 2</div>
-              <div className="text-2xl font-bold text-emerald-600">{semana2.kpis.contratos}</div>
-            </div>
-          </div>
-        </div>
-        <div className="card p-4">
-          <div className="text-sm text-slate-500 mb-2">Minutas Enviadas</div>
-          <div className="flex items-end gap-4">
-            <div>
-              <div className="text-xs text-slate-400">Sem 1</div>
-              <div className="text-2xl font-bold text-sky-600">{semana1.kpis.minutas}</div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-slate-300" />
-            <div>
-              <div className="text-xs text-slate-400">Sem 2</div>
-              <div className="text-2xl font-bold text-sky-600">{semana2.kpis.minutas}</div>
+        {kpiConfig.map(({ key, label, color }) => (
+          <div key={key} className="card p-4">
+            <div className="text-sm text-slate-500 mb-2">{label}</div>
+            <div className="flex items-end gap-2 flex-wrap">
+              {semanas.map((s, i) => (
+                <div key={s.id} className="flex items-center gap-1">
+                  {i > 0 && <ChevronRight className="w-4 h-4 text-slate-300" />}
+                  <div>
+                    <div className="text-xs text-slate-400">S{i + 1}</div>
+                    <div className={`text-xl font-bold text-${color}-600`}>{s.kpis?.[key] || 0}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-        <div className="card p-4">
-          <div className="text-sm text-slate-500 mb-2">Novos Leads</div>
-          <div className="flex items-end gap-4">
-            <div>
-              <div className="text-xs text-slate-400">Sem 1</div>
-              <div className="text-2xl font-bold text-amber-600">{semana1.kpis.novosLeads}</div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-slate-300" />
-            <div>
-              <div className="text-xs text-slate-400">Sem 2</div>
-              <div className="text-2xl font-bold text-amber-600">{semana2.kpis.novosLeads}</div>
-            </div>
-          </div>
-        </div>
-        <div className="card p-4">
-          <div className="text-sm text-slate-500 mb-2">Alertas</div>
-          <div className="flex items-end gap-4">
-            <div>
-              <div className="text-xs text-slate-400">Sem 1</div>
-              <div className="text-2xl font-bold text-rose-600">{semana1.kpis.alertas}</div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-slate-300" />
-            <div>
-              <div className="text-xs text-slate-400">Sem 2</div>
-              <div className="text-2xl font-bold text-rose-600">{semana2.kpis.alertas}</div>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Resumo Quinzenal */}
+      {/* Resumo Consolidado */}
       <div className="card p-6 bg-gradient-to-br from-loara-50 to-violet-50">
         <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-loara-500" />
-          Resumo Quinzenal (19/01 - 30/01)
+          Resumo Consolidado ({semanas.length} semanas)
         </h4>
         <div className="grid md:grid-cols-4 gap-6">
           <div className="text-center">
-            <div className="text-4xl font-bold text-emerald-600">{semana1.kpis.contratos + semana2.kpis.contratos}</div>
+            <div className="text-4xl font-bold text-emerald-600">{totals.contratos}</div>
             <div className="text-sm text-slate-600 mt-1">Contratos Emitidos</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-sky-600">{semana1.kpis.minutas + semana2.kpis.minutas}</div>
+            <div className="text-4xl font-bold text-sky-600">{totals.minutas}</div>
             <div className="text-sm text-slate-600 mt-1">Minutas Enviadas</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-amber-600">{semana1.atividades.length + semana2.atividades.length}</div>
+            <div className="text-4xl font-bold text-amber-600">{totals.atividades}</div>
             <div className="text-sm text-slate-600 mt-1">Empresas Trabalhadas</div>
           </div>
           <div className="text-center">
             <div className="text-4xl font-bold text-violet-600">
-              {Math.round(((semana1.kpis.contratos + semana2.kpis.contratos) / Math.max(1, semana1.kpis.minutas + semana2.kpis.minutas + semana1.kpis.contratos + semana2.kpis.contratos)) * 100)}%
+              {Math.round((totals.contratos / Math.max(1, totals.minutas + totals.contratos)) * 100)}%
             </div>
             <div className="text-sm text-slate-600 mt-1">Taxa de Conversão</div>
           </div>
         </div>
       </div>
 
-      {/* Lado a lado */}
+      {/* Insights de todas as semanas */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <div>
-          <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            {semana1.label}
-            <span className="text-xs bg-loara-100 text-loara-700 px-2 py-0.5 rounded-full">{semana1.foco}</span>
-          </h4>
-          <InsightsPanel
-            positivos={semana1.insights.positivos}
-            atencao={semana1.insights.atencao}
-            onUpdatePositivos={() => {}}
-            onUpdateAtencao={() => {}}
-            onAddPositivo={() => {}}
-            onAddAtencao={() => {}}
-            onRemovePositivo={() => {}}
-            onRemoveAtencao={() => {}}
-          />
+        {semanas.map((semana, i) => (
+          <div key={semana.id}>
+            <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              {semana.label}
+              <span className={`text-xs px-2 py-0.5 rounded-full ${i % 2 === 0 ? 'bg-loara-100 text-loara-700' : 'bg-violet-100 text-violet-700'}`}>
+                {semana.foco}
+              </span>
+            </h4>
+            <InsightsPanel
+              positivos={semana.insights?.positivos || []}
+              atencao={semana.insights?.atencao || []}
+              onUpdatePositivos={() => {}}
+              onUpdateAtencao={() => {}}
+              onAddPositivo={() => {}}
+              onAddAtencao={() => {}}
+              onRemovePositivo={() => {}}
+              onRemoveAtencao={() => {}}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Modal para criar nova semana
+function NovaSemanaModal({ isOpen, onClose, onSave }) {
+  const [label, setLabel] = useState('')
+  const [foco, setFoco] = useState('')
+  const [dataInicio, setDataInicio] = useState('')
+  const [dataFim, setDataFim] = useState('')
+
+  const handleSave = () => {
+    if (!label || !dataInicio || !dataFim) return
+
+    const id = `semana_${dataInicio.replace(/-/g, '_')}`
+    onSave({
+      id,
+      label,
+      foco: foco || 'Execução',
+      periodo: { inicio: dataInicio, fim: dataFim },
+      kpis: {
+        contratos: 0,
+        minutas: 0,
+        novosLeads: 0,
+        alertas: 0,
+        alertaTexto: ''
+      },
+      insights: {
+        positivos: [],
+        atencao: []
+      },
+      atividades: [],
+      followups: []
+    })
+
+    // Reset form
+    setLabel('')
+    setFoco('')
+    setDataInicio('')
+    setDataFim('')
+    onClose()
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fadeIn" onClick={e => e.stopPropagation()}>
+        <div className="p-6 border-b border-slate-100">
+          <h3 className="text-lg font-bold text-slate-900">Nova Semana</h3>
+          <p className="text-sm text-slate-500 mt-1">Adicione um novo período de acompanhamento</p>
         </div>
-        <div>
-          <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            {semana2.label}
-            <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">{semana2.foco}</span>
-          </h4>
-          <InsightsPanel
-            positivos={semana2.insights.positivos}
-            atencao={semana2.insights.atencao}
-            onUpdatePositivos={() => {}}
-            onUpdateAtencao={() => {}}
-            onAddPositivo={() => {}}
-            onAddAtencao={() => {}}
-            onRemovePositivo={() => {}}
-            onRemoveAtencao={() => {}}
-          />
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Nome do período *</label>
+            <input
+              type="text"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="Ex: Semana 03/02 - 07/02"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Foco</label>
+            <input
+              type="text"
+              value={foco}
+              onChange={(e) => setFoco(e.target.value)}
+              placeholder="Ex: Prospecção, Execução, Onboarding..."
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Data início *</label>
+              <input
+                type="date"
+                value={dataInicio}
+                onChange={(e) => setDataInicio(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Data fim *</label>
+              <input
+                type="date"
+                value={dataFim}
+                onChange={(e) => setDataFim(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!label || !dataInicio || !dataFim}
+            className="px-4 py-2 text-sm font-medium text-white bg-loara-600 hover:bg-loara-700 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Criar Semana
+          </button>
         </div>
       </div>
     </div>
@@ -693,7 +781,8 @@ function ComparativoView({ statusData }) {
 
 export default function TabStatusComercial() {
   const { data, updateData, editMode } = useData()
-  const [selectedPeriod, setSelectedPeriod] = useState('semana_19_25')
+  const [selectedPeriod, setSelectedPeriod] = useState(null)
+  const [showNewModal, setShowNewModal] = useState(false)
 
   // Usar dados diretamente do context (já garantido que existe no DataContext)
   const statusData = data.status_comercial
@@ -703,13 +792,63 @@ export default function TabStatusComercial() {
     updateData('status_comercial', newData)
   }
 
-  const periods = [
-    { id: 'semana_19_25', label: 'Semana 19/01 - 25/01', foco: 'Execução', color: 'loara' },
-    { id: 'semana_26_30', label: 'Semana 26/01 - 30/01', foco: 'Prospecção & Onboarding', color: 'violet' },
-    { id: 'comparativo', label: 'Comparativo Quinzenal', foco: 'Visão Consolidada', color: 'emerald' },
-  ]
+  // Gerar períodos dinamicamente a partir dos dados
+  const periods = useMemo(() => {
+    const dynamicPeriods = Object.entries(statusData || {})
+      .filter(([key]) => key !== 'comparativo' && key.startsWith('semana'))
+      .map(([id, semana]) => ({
+        id,
+        label: semana.label,
+        foco: semana.foco,
+        color: Object.keys(statusData).indexOf(id) % 2 === 0 ? 'loara' : 'violet'
+      }))
+      .sort((a, b) => {
+        // Ordenar por data se disponível, senão por ID
+        const dateA = statusData[a.id]?.periodo?.inicio || a.id
+        const dateB = statusData[b.id]?.periodo?.inicio || b.id
+        return dateA.localeCompare(dateB)
+      })
 
-  const currentData = statusData[selectedPeriod]
+    return [
+      ...dynamicPeriods,
+      { id: 'comparativo', label: 'Comparativo', foco: 'Visão Consolidada', color: 'emerald' }
+    ]
+  }, [statusData])
+
+  // Selecionar primeiro período se nenhum selecionado
+  useEffect(() => {
+    if (!selectedPeriod && periods.length > 0) {
+      setSelectedPeriod(periods[0].id)
+    }
+  }, [periods, selectedPeriod])
+
+  const currentData = statusData?.[selectedPeriod]
+
+  // Função para adicionar nova semana
+  const addSemana = (novaSemana) => {
+    const newData = {
+      ...statusData,
+      [novaSemana.id]: novaSemana
+    }
+    saveToContext(newData)
+    setSelectedPeriod(novaSemana.id)
+  }
+
+  // Função para excluir semana
+  const removeSemana = (semanaId) => {
+    if (!confirm(`Tem certeza que deseja excluir "${statusData[semanaId]?.label}"? Esta ação não pode ser desfeita.`)) {
+      return
+    }
+
+    const { [semanaId]: removed, ...newData } = statusData
+    saveToContext(newData)
+
+    // Selecionar outra semana se a atual foi removida
+    if (selectedPeriod === semanaId) {
+      const remainingPeriods = Object.keys(newData).filter(k => k.startsWith('semana'))
+      setSelectedPeriod(remainingPeriods[0] || 'comparativo')
+    }
+  }
 
   // Funções de atualização
   const updateKPI = (field, value) => {
@@ -898,10 +1037,24 @@ export default function TabStatusComercial() {
     saveToContext(newData)
   }
 
-  // Calcular trends para a segunda semana
+  // Calcular trends comparando com a semana anterior
   const getTrend = (field) => {
-    if (selectedPeriod !== 'semana_26_30') return null
-    return statusData.semana_26_30.kpis[field] - statusData.semana_19_25.kpis[field]
+    const semanas = Object.keys(statusData || {})
+      .filter(k => k.startsWith('semana'))
+      .sort((a, b) => {
+        const dateA = statusData[a]?.periodo?.inicio || a
+        const dateB = statusData[b]?.periodo?.inicio || b
+        return dateA.localeCompare(dateB)
+      })
+
+    const currentIndex = semanas.indexOf(selectedPeriod)
+    if (currentIndex <= 0) return null
+
+    const previousPeriod = semanas[currentIndex - 1]
+    const currentValue = statusData[selectedPeriod]?.kpis?.[field] || 0
+    const previousValue = statusData[previousPeriod]?.kpis?.[field] || 0
+
+    return currentValue - previousValue
   }
 
   return (
@@ -925,22 +1078,29 @@ export default function TabStatusComercial() {
         )}
       </div>
 
+      {/* Modal de nova semana */}
+      <NovaSemanaModal
+        isOpen={showNewModal}
+        onClose={() => setShowNewModal(false)}
+        onSave={addSemana}
+      />
+
       {/* Seletor de Período (Timeline) */}
       <div className="card p-2">
         <div className="flex flex-wrap gap-2">
           {periods.map((period) => (
-            <button
+            <div
               key={period.id}
-              onClick={() => setSelectedPeriod(period.id)}
-              className={`flex-1 min-w-[200px] p-4 rounded-xl transition-all ${
+              className={`flex-1 min-w-[200px] p-4 rounded-xl transition-all relative group ${
                 selectedPeriod === period.id
                   ? period.color === 'loara'
                     ? 'bg-loara-600 text-white shadow-lg'
                     : period.color === 'violet'
                     ? 'bg-violet-600 text-white shadow-lg'
                     : 'bg-emerald-600 text-white shadow-lg'
-                  : 'bg-slate-50 hover:bg-slate-100 text-slate-700'
+                  : 'bg-slate-50 hover:bg-slate-100 text-slate-700 cursor-pointer'
               }`}
+              onClick={() => setSelectedPeriod(period.id)}
             >
               <div className="flex items-center justify-between">
                 <div className="text-left">
@@ -949,12 +1109,42 @@ export default function TabStatusComercial() {
                     Foco: {period.foco}
                   </div>
                 </div>
-                {selectedPeriod === period.id && (
-                  <CheckCircle2 className="w-5 h-5" />
-                )}
+                <div className="flex items-center gap-2">
+                  {selectedPeriod === period.id && (
+                    <CheckCircle2 className="w-5 h-5" />
+                  )}
+                  {/* Botão de excluir - só mostra em modo edição e não no comparativo */}
+                  {editMode && period.id !== 'comparativo' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        removeSemana(period.id)
+                      }}
+                      className={`p-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100 ${
+                        selectedPeriod === period.id
+                          ? 'hover:bg-white/20 text-white'
+                          : 'hover:bg-rose-100 text-rose-500'
+                      }`}
+                      title="Excluir semana"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
-            </button>
+            </div>
           ))}
+
+          {/* Botão de adicionar nova semana */}
+          {editMode && (
+            <button
+              onClick={() => setShowNewModal(true)}
+              className="min-w-[150px] p-4 rounded-xl border-2 border-dashed border-slate-300 text-slate-500 hover:border-loara-400 hover:text-loara-600 hover:bg-loara-50 transition-all flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span className="font-medium">Nova Semana</span>
+            </button>
+          )}
         </div>
       </div>
 

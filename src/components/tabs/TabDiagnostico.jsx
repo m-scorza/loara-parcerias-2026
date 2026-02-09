@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis
 import {
   Users, UserCheck, DollarSign, Briefcase, Star, Search,
   Filter, AlertTriangle, CheckCircle2, TrendingUp,
-  ChevronDown, ChevronUp, XCircle, X, Eye
+  ChevronDown, ChevronUp, XCircle, X, Eye, Plus, Trash2, Edit3, Save
 } from 'lucide-react'
 
 const CATEGORY_COLORS = {
@@ -97,6 +97,164 @@ function ParceiroListModal({ isOpen, onClose, title, parceiros, subtitle }) {
   )
 }
 
+// Modal para criar/editar parceiro
+function ParceiroFormModal({ isOpen, onClose, onSave, parceiro = null }) {
+  const [formData, setFormData] = useState({
+    nome_completo: parceiro?.nome || '',
+    email: parceiro?.email || '',
+    tipo_parceria: parceiro?.tipoParceria || 'Bronze',
+    status: parceiro?.status || 'Ativado',
+    empresasIndicadas: parceiro?.empresasIndicadas || 0,
+    empresasCIC: parceiro?.empresasCIC || 0,
+    creditoTomado: parceiro?.creditoTomado || 0,
+    receitaLoara: parceiro?.receitaLoara || 0,
+    dias_sem_indicar: parceiro?.diasSemIndicar || null
+  })
+
+  const handleSave = () => {
+    if (!formData.nome_completo) return
+    onSave({
+      ...formData,
+      id: parceiro?.id || `parceiro_${Date.now()}`
+    })
+    onClose()
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-fadeIn" onClick={e => e.stopPropagation()}>
+        <div className="p-6 border-b border-slate-100">
+          <h3 className="text-lg font-bold text-slate-900">
+            {parceiro ? 'Editar Parceiro' : 'Novo Parceiro'}
+          </h3>
+          <p className="text-sm text-slate-500 mt-1">
+            {parceiro ? 'Atualize os dados do parceiro' : 'Adicione um novo parceiro à carteira'}
+          </p>
+        </div>
+        <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Nome completo *</label>
+              <input
+                type="text"
+                value={formData.nome_completo}
+                onChange={(e) => setFormData({ ...formData, nome_completo: e.target.value })}
+                placeholder="Nome do parceiro"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="email@exemplo.com"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Categoria</label>
+              <select
+                value={formData.tipo_parceria}
+                onChange={(e) => setFormData({ ...formData, tipo_parceria: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+              >
+                <option value="Ouro">🥇 Ouro</option>
+                <option value="Prata">🥈 Prata</option>
+                <option value="Bronze">🥉 Bronze</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+              >
+                <option value="Ativado">Ativo</option>
+                <option value="Inativo">Inativo</option>
+                <option value="Suspenso">Suspenso</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Empresas Indicadas</label>
+              <input
+                type="number"
+                value={formData.empresasIndicadas}
+                onChange={(e) => setFormData({ ...formData, empresasIndicadas: parseInt(e.target.value) || 0 })}
+                min="0"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Empresas CIC</label>
+              <input
+                type="number"
+                value={formData.empresasCIC}
+                onChange={(e) => setFormData({ ...formData, empresasCIC: parseInt(e.target.value) || 0 })}
+                min="0"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Crédito Tomado (R$)</label>
+              <input
+                type="number"
+                value={formData.creditoTomado}
+                onChange={(e) => setFormData({ ...formData, creditoTomado: parseFloat(e.target.value) || 0 })}
+                min="0"
+                step="0.01"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Receita LOARA (R$)</label>
+              <input
+                type="number"
+                value={formData.receitaLoara}
+                onChange={(e) => setFormData({ ...formData, receitaLoara: parseFloat(e.target.value) || 0 })}
+                min="0"
+                step="0.01"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Dias sem indicar</label>
+              <input
+                type="number"
+                value={formData.dias_sem_indicar || ''}
+                onChange={(e) => setFormData({ ...formData, dias_sem_indicar: e.target.value ? parseInt(e.target.value) : null })}
+                min="0"
+                placeholder="Deixe vazio se nunca indicou"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-loara-500"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!formData.nome_completo}
+            className="px-4 py-2 text-sm font-medium text-white bg-loara-600 hover:bg-loara-700 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <Save className="w-4 h-4" />
+            {parceiro ? 'Salvar Alterações' : 'Criar Parceiro'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Card clicável sem tooltip
 function InteractiveStatCard({ title, value, subtitle, color, icon: Icon, onClick }) {
   const colorClasses = {
@@ -178,12 +336,18 @@ export default function TabDiagnostico() {
     Bronze: true
   })
 
-  // Modal state
+  // Modal state para lista de parceiros
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
     title: '',
     subtitle: '',
     parceiros: []
+  })
+
+  // Modal state para criar/editar parceiro
+  const [parceiroModal, setParceiroModal] = useState({
+    isOpen: false,
+    parceiro: null
   })
 
   const openModal = (title, parceiros, subtitle = '') => {
@@ -351,6 +515,77 @@ export default function TabDiagnostico() {
     }
   }
 
+  // Adicionar novo parceiro
+  const addParceiro = (parceiroData) => {
+    const newParceiro = {
+      id: parceiroData.id,
+      nome_completo: parceiroData.nome_completo,
+      email: parceiroData.email,
+      tipo_parceria: parceiroData.tipo_parceria,
+      status: parceiroData.status,
+      empresasIndicadas: parceiroData.empresasIndicadas,
+      empresasCIC: parceiroData.empresasCIC,
+      creditoTomado: parceiroData.creditoTomado,
+      receitaLoara: parceiroData.receitaLoara,
+      dias_sem_indicar: parceiroData.dias_sem_indicar,
+      highPerformer: false
+    }
+    const lista = [...(data.parceiros_lista || []), newParceiro]
+    updateData('parceiros_lista', lista)
+    setParceiroModal({ isOpen: false, parceiro: null })
+  }
+
+  // Editar parceiro existente
+  const editParceiro = (parceiroData) => {
+    const lista = data.parceiros_lista || []
+    const index = lista.findIndex(p => p.id === parceiroData.id)
+    if (index !== -1) {
+      const updatedLista = [...lista]
+      updatedLista[index] = {
+        ...updatedLista[index],
+        nome_completo: parceiroData.nome_completo,
+        email: parceiroData.email,
+        tipo_parceria: parceiroData.tipo_parceria,
+        status: parceiroData.status,
+        empresasIndicadas: parceiroData.empresasIndicadas,
+        empresasCIC: parceiroData.empresasCIC,
+        creditoTomado: parceiroData.creditoTomado,
+        receitaLoara: parceiroData.receitaLoara,
+        dias_sem_indicar: parceiroData.dias_sem_indicar
+      }
+      updateData('parceiros_lista', updatedLista)
+    }
+    setParceiroModal({ isOpen: false, parceiro: null })
+  }
+
+  // Excluir parceiro
+  const removeParceiro = (parceiroId) => {
+    if (!confirm('Tem certeza que deseja excluir este parceiro? Esta ação não pode ser desfeita.')) {
+      return
+    }
+    const lista = (data.parceiros_lista || []).filter(p => p.id !== parceiroId)
+    updateData('parceiros_lista', lista)
+  }
+
+  // Abrir modal de edição
+  const openEditModal = (parceiro) => {
+    setParceiroModal({
+      isOpen: true,
+      parceiro: {
+        id: parceiro.id,
+        nome: parceiro.nome,
+        email: parceiro.email,
+        tipoParceria: parceiro.tipoParceria,
+        status: parceiro.status,
+        empresasIndicadas: parceiro.empresasIndicadas,
+        empresasCIC: parceiro.empresasCIC,
+        creditoTomado: parceiro.creditoTomado,
+        receitaLoara: parceiro.receitaLoara,
+        diasSemIndicar: parceiro.diasSemIndicar
+      }
+    })
+  }
+
   // Toggle sort order
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -411,13 +646,21 @@ export default function TabDiagnostico() {
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      {/* Modal */}
+      {/* Modal de lista de parceiros */}
       <ParceiroListModal
         isOpen={modalConfig.isOpen}
         onClose={closeModal}
         title={modalConfig.title}
         subtitle={modalConfig.subtitle}
         parceiros={modalConfig.parceiros}
+      />
+
+      {/* Modal de criar/editar parceiro */}
+      <ParceiroFormModal
+        isOpen={parceiroModal.isOpen}
+        onClose={() => setParceiroModal({ isOpen: false, parceiro: null })}
+        onSave={parceiroModal.parceiro ? editParceiro : addParceiro}
+        parceiro={parceiroModal.parceiro}
       />
 
       <div>
@@ -788,13 +1031,24 @@ export default function TabDiagnostico() {
       <div className="card overflow-hidden">
         <div className="p-6 border-b border-slate-100">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <h3 className="font-bold text-slate-900 flex items-center gap-2">
-              <Users className="w-5 h-5 text-loara-500" />
-              Listagem de Parceiros
-              <span className="ml-2 px-2 py-0.5 bg-loara-100 text-loara-700 rounded-full text-sm">
-                {filteredParceiros.length} de {stats.ativos}
-              </span>
-            </h3>
+            <div className="flex items-center gap-3">
+              <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                <Users className="w-5 h-5 text-loara-500" />
+                Listagem de Parceiros
+                <span className="ml-2 px-2 py-0.5 bg-loara-100 text-loara-700 rounded-full text-sm">
+                  {filteredParceiros.length} de {stats.ativos}
+                </span>
+              </h3>
+              {editMode && (
+                <button
+                  onClick={() => setParceiroModal({ isOpen: true, parceiro: null })}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-loara-600 text-white rounded-lg text-sm hover:bg-loara-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Novo Parceiro
+                </button>
+              )}
+            </div>
 
             {/* Search */}
             <div className="flex items-center gap-3">
@@ -902,12 +1156,13 @@ export default function TabDiagnostico() {
                 <th className="p-4 text-center font-semibold text-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => handleSort('diasSemIndicar')}>
                   Última Indicação {sortBy === 'diasSemIndicar' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
+                {editMode && <th className="p-4 text-center font-semibold text-slate-600 w-24">Ações</th>}
               </tr>
             </thead>
             <tbody>
               {filteredParceiros.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-slate-500">
+                  <td colSpan={editMode ? 8 : 7} className="p-8 text-center text-slate-500">
                     Nenhum parceiro encontrado com os filtros selecionados.
                   </td>
                 </tr>
@@ -985,6 +1240,26 @@ export default function TabDiagnostico() {
                         <span className="text-rose-400 text-sm">Nunca indicou</span>
                       )}
                     </td>
+                    {editMode && (
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => openEditModal(p)}
+                            className="p-2 text-slate-500 hover:text-loara-600 hover:bg-loara-50 rounded-lg transition-colors"
+                            title="Editar parceiro"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => removeParceiro(p.id)}
+                            className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                            title="Excluir parceiro"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
